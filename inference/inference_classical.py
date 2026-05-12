@@ -8,7 +8,7 @@ from collections import deque
 # --- CONFIGURATION ---
 MODEL_PATH = 'models/best_svm_model.pkl'
 SCALER_PATH = 'models/scaler.pkl'
-ANCHORS_PATH = 'data/processed/dtw_anchors.json'
+GOLD_STANDARDS_PATH = 'data/processed/gold_standards.json'
 CLASSES_PATH = 'data/processed/classes.json'
 
 WINDOW_SIZE = 40
@@ -36,16 +36,6 @@ def manual_weighted_dtw(seq1, seq2, weights):
     for i in range(1, n + 1):
         for j in range(1, m + 1):
             cost = weighted_frame_distance(seq1[i-1], seq2[j-1], weights)
-            dtw_matrix[i, j] = cost + min(dtw_matrix[i-1, j], dtw_matrix[i, j-1], dtw_matrix[i-1, j-1])
-    return dtw_matrix[n, m] / (n + m)
-
-def univariate_dtw_distance(s1, s2):
-    n, m = len(s1), len(s2)
-    dtw_matrix = np.full((n + 1, m + 1), np.inf)
-    dtw_matrix[0, 0] = 0
-    for i in range(1, n + 1):
-        for j in range(1, m + 1):
-            cost = abs(s1[i-1] - s2[j-1])
             dtw_matrix[i, j] = cost + min(dtw_matrix[i-1, j], dtw_matrix[i, j-1], dtw_matrix[i-1, j-1])
     return dtw_matrix[n, m] / (n + m)
 
@@ -105,7 +95,7 @@ def calculate_slope(series):
     return slope
 
 
-def extract_features(numeric_window, anchors, gold_standards, weights):
+def extract_features(numeric_window, anchors, weights):
     row = {}
     
     flex_data = numeric_window[:, :8]
@@ -173,7 +163,7 @@ class RealTimeInference:
         self.scaler = joblib.load(SCALER_PATH)
         with open(CLASSES_PATH, 'r') as f:
             self.classes = json.load(f)
-        with open(ANCHORS_PATH, 'r') as f:
+        with open(GOLD_STANDARDS_PATH, 'r') as f:
             data = json.load(f)
             self.anchors = {k: np.array(v) for k, v in data.items()}
         
