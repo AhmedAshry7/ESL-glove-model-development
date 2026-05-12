@@ -51,7 +51,6 @@ def manual_weighted_dtw(seq1, seq2, weights):
     # Normalized by the length of the path (n + m) to keep values comparable
     return dtw_matrix[n, m] / (n + m)
 
-
 def get_gold_segment(raw_frames, window_size, overlap_ratio=0.75):
     n_frames = len(raw_frames)
 
@@ -104,6 +103,61 @@ def get_segments(raw_frames, window_size, overlap_ratio=0.75):
             
     return segments
 
+def count_significant_changes(series, threshold=0.4):
+    """
+    Counts established trends and their reversals.
+    - If a signal increases by >= threshold, it's 1 segment.
+    - It stays in that segment as long as it keeps rising or doesn't drop by threshold.
+    - If it drops from the peak by >= threshold, it counts as a 2nd segment (reversal).
+    """
+    if len(series) == 0: 
+        return 0
+        
+    count = 0
+    ref = series[0]
+    direction = None  # Tracks current trend: 'up' or 'down'
+
+    for val in series[1:]:
+        if direction is None:
+            # Establishing the first direction
+            if val - ref >= threshold:
+                count = 1
+                direction = 'up'
+                ref = val
+            elif ref - val >= threshold:
+                count = 1
+                direction = 'down'
+                ref = val
+        elif direction == 'up':
+            # In an upward trend, track the highest peak
+            if val > ref:
+                ref = val
+            # If it drops from that peak by the threshold, it's a reversal
+            elif ref - val >= threshold:
+                count += 1
+                direction = 'down'
+                ref = val
+        elif direction == 'down':
+            # In a downward trend, track the lowest trough
+            if val < ref:
+                ref = val
+            # If it rises from that trough by the threshold, it's a reversal
+            elif val - ref >= threshold:
+                count += 1
+                direction = 'up'
+                ref = val
+                
+    return count
+
+def calculate_slope(series):
+    """Calculates the linear regression slope of the sensor values over the window."""
+    y = np.array(series)
+    x = np.arange(len(y))
+    # Standard linear regression slope formula
+    if len(x) < 2: return 0
+    slope = np.polyfit(x, y, 1)[0]
+    return slope
+
 def get_rest_frame():
     """Returns a 'rest' frame based on specified parameters."""
     flex_keys = [f"flex{i}" for i in range(8, 16)]
@@ -150,6 +204,7 @@ weights = np.ones(22)
 # --- 3. Feature Extraction & Processing ---
 
 processed_features = []
+valid_zs = [1, 3, 4, 5]
 
 # Extract Gold Standards for the Top 20
 gold_standards_20 = {}
@@ -159,6 +214,7 @@ for item in raw_data:
         gold_standards_20[label] = get_gold_segment(item['frames'], window_size, overlap_ratio=overlap)
     if len(gold_standards_20) == 20:
         break
+
 
 # Second pass: Augmentation, Windowing, and Feature Extraction
 for item in raw_data:
@@ -174,53 +230,74 @@ for item in raw_data:
         flex_data = numeric_window[:, :8]
         flex_means = np.mean(flex_data, axis=0)
         flex_vars = np.var(flex_data, axis=0)
-        
+        flex_max = np.max(flex_data, axis=0)
+        flex_min = np.min(flex_data, axis=0)
+        flex_sig_changes = [count_significant_changes(flex_data[:, i], threshold=0.4) for i in range(8)]
+        flex_slopes = [calculate_slope(flex_data[:, i]) for i in range(8)]
+
         # b) Pad Stats (Indices 8-21: Z is at 8, 10, 12... R is at 9, 11, 13...)
         pad_data = numeric_window[:, 8:]
-        max_z_vals = []
-        corr_r_vals = []
-        for i in range(0, 14, 2):
-            z_col = pad_data[:, i]
-            r_col = pad_data[:, i+1]
-            max_idx = np.argmax(z_col)
-            max_z_vals.append(z_col[max_idx])
-            corr_r_vals.append(r_col[max_idx])
-            
+        
+        max_z_vals, corr_r_vals, pad_events = [], [], []
+        for p_idx in range(7):
+            z_col, r_col = pad_data[:, 2*p_idx], pad_data[:, 2*p_idx + 1]
+            max_z_vals.append(z_col[np.argmax(z_col)])
+            corr_r_vals.append(r_col[np.argmax(z_col)])
+            for vz in valid_zs:
+                indices = np.where(z_col+1 == vz)[0]
+                pad_events.append(((p_idx, vz), indices[0] if len(indices) > 0 else float('inf')))
+
+        pad_events.sort(key=lambda x: x[1])
+        event_orders, rank = {}, 1
+        for event, time in pad_events:
+            if time != float('inf'):
+                event_orders[event], rank = rank, rank + 1
+            else:
+                event_orders[event] = 0
+
         # c) Total Energy of Changes (Flex only)
         # Sum of absolute differences between consecutive frames
         flex_energy = np.sum(np.abs(np.diff(flex_data, axis=0)), axis=0)
         
-
+        
         # --- Construct Feature Row ---
         feature_row = {
             "label": label,
         }
-
+        
         for anchor_label in top_20_labels:
             dist = manual_weighted_dtw(numeric_window, gold_standards_20[anchor_label], weights)
             feature_row[f"dtw_{anchor_label}"] = dist
 
         # Add flex features
         for i in range(8):
-            feature_row[f"flex{i+8}_mean"] = flex_means[i]
-            feature_row[f"flex{i+8}_var"] = flex_vars[i]
-            feature_row[f"flex{i+8}_energy"] = flex_energy[i]
+            f_idx = i + 8
+            feature_row[f"flex{f_idx}_mean"] = flex_means[i]
+            feature_row[f"flex{f_idx}_var"] = flex_vars[i]
+            feature_row[f"flex{f_idx}_energy"] = flex_energy[i]
+            feature_row[f"flex{f_idx}_max"] = flex_max[i]
+            feature_row[f"flex{f_idx}_min"] = flex_min[i]
+            feature_row[f"flex{f_idx}_sig_changes"] = flex_sig_changes[i]
+            feature_row[f"flex{f_idx}_slope"] = flex_slopes[i]
             
-        # Add pad features
+        # Add pad features (with the new Order column)
+                
+        
         for i in range(7):
-            feature_row[f"pad{i}_max_z"] = max_z_vals[i]
-            feature_row[f"pad{i}_corr_r"] = corr_r_vals[i]
-            
+                    r = corr_r_vals[i]
+                    feature_row.update({f'pad{i}_max_z': max_z_vals[i] + 1, f'pad{i}_corr_r': 0 if r == 0 else (1 if r < 900 else 2)})
+                    for vz in valid_zs:
+                        feature_row[f'pad{i}_{vz}'] = event_orders[(i, vz)]
+
         processed_features.append(feature_row)
 
 # --- 4. Saving Results ---
 
 df = pd.DataFrame(processed_features)
-output_csv = "data/processed/extracted_features_gemini.csv"
+output_csv = "data/processed/extracted_features_advanced.csv"
 df.to_csv(output_csv, index=False)
 
 print(f"Extraction complete. {len(processed_features)} augmented samples saved to {output_csv}.")
-
 
 # Need to save the gold standards for inference
 # We'll save them as a dictionary of lists (to be JSON serializable)

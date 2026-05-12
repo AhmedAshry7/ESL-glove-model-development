@@ -1,0 +1,92 @@
+{
+  "W": 40,
+  "n_features": 22,
+  "flex_channels": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "pad_z_channels": [
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+  ],
+  "pad_r_channels": [
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21
+  ],
+  "feature_names": [
+    "flex_flex8_curl",
+    "flex_flex9_curl",
+    "flex_flex10_curl",
+    "flex_flex11_curl",
+    "flex_flex12_curl",
+    "flex_flex13_curl",
+    "flex_flex14_curl",
+    "flex_flex15_curl",
+    "pad_ch0_z_norm",
+    "pad_ch1_z_norm",
+    "pad_ch2_z_norm",
+    "pad_ch3_z_norm",
+    "pad_ch4_z_norm",
+    "pad_ch5_z_norm",
+    "pad_ch6_z_norm",
+    "pad_ch0_r_norm",
+    "pad_ch1_r_norm",
+    "pad_ch2_r_norm",
+    "pad_ch3_r_norm",
+    "pad_ch4_r_norm",
+    "pad_ch5_r_norm",
+    "pad_ch6_r_norm"
+  ],
+  "n_classes": 7,
+  "class_labels": [
+    "احمد",
+    "انا",
+    "صوتك",
+    "عشري",
+    "فريق",
+    "مرحبا",
+    "من"
+  ],
+  "n_raw": 7,
+  "n_aug": 896,
+  "aug_per_sample": 8,
+  "augmentation_params": {
+    "time_warp_range": [
+      0.7,
+      0.85,
+      1.15,
+      1.3
+    ],
+    "shift_values": [
+      0.5,
+      1,
+      -0.5,
+      -1
+    ],
+    "least_shift": 10,
+    "flex_noise_std": 0.01,
+    "frame_dropout_max": 3
+  },
+  "pad_z_normalization": {
+    "method": "linear",
+    "formula": "(z + 1) / 5  →  [0, 1]"
+  },
+  "pad_r_normalization": "Logical binning: 0=no contact, 1=thumb, 2=other finger; then scaled to [0, 1]",
+  "flex_smoothing": "rolling mean window=3"
+}
