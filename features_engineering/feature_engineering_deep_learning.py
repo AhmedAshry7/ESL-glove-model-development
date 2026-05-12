@@ -400,7 +400,7 @@ for i, (arr, m, label) in enumerate(zip(padded_seqs, masks, y_raw)):
     a_arrs, a_masks = generate_augmentations(arr, m, aug_per_sample, rng)
     aug_arrays.extend(a_arrs)
     aug_mask_list.extend(a_masks)
-    aug_labels.extend([label] * aug_per_sample)
+    aug_labels.extend([label] * len(a_arrs))
 
 X_aug    = np.stack(aug_arrays, axis=0).astype(np.float32)
 mask_aug = np.stack(aug_mask_list, axis=0)
