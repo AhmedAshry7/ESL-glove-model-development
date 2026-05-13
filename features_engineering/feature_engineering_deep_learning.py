@@ -106,7 +106,6 @@ def smooth_flex(sequences, window = 3):
 def compute_window_size(sequences, percentile = 0.9):
     lengths = [arr.shape[0] for arr in sequences]
     window_size = int(np.quantile(lengths, percentile))
-    overlap = 0.75
     return window_size
 
 
@@ -127,10 +126,6 @@ def pad_or_truncate(arr, W):
 
     return padded, mask
 
-
-# ─────────────────────────────────────────────
-# Step 4: Data augmentation
-# ─────────────────────────────────────────────
 
 def augment_time_warp(arr, mask):
     """
