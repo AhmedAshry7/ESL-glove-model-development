@@ -1,0 +1,4 @@
+Things to be done
+1- Create a none class with the rest position
+2- Train a binary rest/active classifier to detect when the hand is in a neutral position. Use this to trigger segmentation rather than purely time-based sliding windows. Real sign language has brief pauses between words, and detecting these pauses is more reliable than fixed-stride sliding windows for inter-sign boundaries.
+3- NLP layer that takes the output of the inference and checks for contextual smoothing and grammatical alignement
