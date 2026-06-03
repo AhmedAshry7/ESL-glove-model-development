@@ -1,0 +1,1105 @@
+All features used except left thumb and index(Trained on: Bye_L_training.json, HelBye.json, HeByeSlp.json. Tested on: Bye_L_training.json, Bye_L_exc_index+thumb.json , Hel_exc_index+thumb.json, Hel_L_exc_index+thumb.json, Slp_exc_index+thumb.json)
+
+
+
+================================================================================
+Loading test file: E:\GP\ESL-glove-model-development\data\raw\test\Bye_L_exc_index+thumb.json
+================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+============================================================
+▶ Simulating detection for recorded sign: 'ByeLeft'
+============================================================
+Preprocessed into 217 frames (~4.34 seconds)
+
+Starting simulation...
+
+--- [Frame 0/217] ----------------------------------------
+Activity State: IDLE
+Prefilter Thinking: Waiting for buffer (0% / 60% required)
+
+--- [Frame 10/217] ----------------------------------------
+Activity State: IDLE
+Prefilter Thinking: Waiting for buffer (0% / 60% required)
+
+--- [Frame 20/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Waiting for buffer (14% / 60% required)
+
+--- [Frame 30/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Waiting for buffer (34% / 60% required)
+
+--- [Frame 40/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Waiting for buffer (54% / 60% required)
+
+--- [Frame 50/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (78.0%), Slap (9.0%), HelloLeft (9.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.145 | Min Seen: 0.145
+   -> ByeLeft    | Current: 0.712 | Min Seen: 0.712
+   -> ByeLeft    | Current: 0.753 | Min Seen: 0.753
+   -> HelloLeft  | Current: 0.868 | Min Seen: 0.868
+   -> HelloLeft  | Current: 0.875 | Min Seen: 0.875
+
+--- [Frame 60/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (79.0%), Slap (10.0%), HelloLeft (8.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.132 | Min Seen: 0.132
+   -> ByeLeft    | Current: 0.700 | Min Seen: 0.700
+   -> ByeLeft    | Current: 0.744 | Min Seen: 0.744
+   -> HelloLeft  | Current: 0.855 | Min Seen: 0.855
+   -> HelloLeft  | Current: 0.864 | Min Seen: 0.864
+
+--- [Frame 70/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (83.0%), Slap (10.0%), HelloLeft (4.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.080 | Min Seen: 0.080
+   -> ByeLeft    | Current: 0.632 | Min Seen: 0.632
+   -> ByeLeft    | Current: 0.676 | Min Seen: 0.676
+   -> HelloLeft  | Current: 0.856 | Min Seen: 0.854
+   -> HelloLeft  | Current: 0.865 | Min Seen: 0.863
+
+--- [Frame 80/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (83.0%), Slap (10.0%), HelloLeft (3.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.059 | Min Seen: 0.059
+   -> ByeLeft    | Current: 0.602 | Min Seen: 0.602
+   -> ByeLeft    | Current: 0.645 | Min Seen: 0.645
+   -> HelloLeft  | Current: 0.866 | Min Seen: 0.854
+   -> HelloLeft  | Current: 0.875 | Min Seen: 0.863
+
+--- [Frame 90/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (85.0%), Slap (9.0%), HelloLeft (2.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.023 | Min Seen: 0.023
+   -> ByeLeft    | Current: 0.584 | Min Seen: 0.584
+   -> ByeLeft    | Current: 0.618 | Min Seen: 0.618
+   -> HelloLeft  | Current: 0.884 | Min Seen: 0.854
+   -> HelloLeft  | Current: 0.892 | Min Seen: 0.863
+
+--- [Frame 100/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (85.0%), Slap (10.0%), HelloLeft (2.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.019 | Min Seen: 0.019
+   -> ByeLeft    | Current: 0.583 | Min Seen: 0.583
+   -> Slap       | Current: 1.026 | Min Seen: 1.025
+   -> Slap       | Current: 1.064 | Min Seen: 1.063
+   -> HelloLeft  | Current: 1.100 | Min Seen: 1.100
+
+--- [Frame 110/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (80.0%), Slap (13.0%), HelloLeft (4.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.026 | Min Seen: 0.026
+   -> ByeLeft    | Current: 0.582 | Min Seen: 0.582
+   -> ByeLeft    | Current: 0.637 | Min Seen: 0.637
+   -> Slap       | Current: 1.028 | Min Seen: 1.025
+   -> Slap       | Current: 1.066 | Min Seen: 1.063
+
+--- [Frame 120/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (82.0%), Slap (10.0%), HelloLeft (5.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.026 | Min Seen: 0.026
+   -> ByeLeft    | Current: 0.599 | Min Seen: 0.599
+   -> ByeLeft    | Current: 0.632 | Min Seen: 0.632
+   -> Slap       | Current: 1.022 | Min Seen: 1.022
+   -> Slap       | Current: 1.061 | Min Seen: 1.061
+
+--- [Frame 130/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (84.0%), Slap (10.0%), HelloLeft (3.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.016 | Min Seen: 0.016
+   -> ByeLeft    | Current: 0.581 | Min Seen: 0.581
+   -> ByeLeft    | Current: 0.608 | Min Seen: 0.608
+   -> Slap       | Current: 1.033 | Min Seen: 1.033
+   -> HelloLeft  | Current: 1.034 | Min Seen: 1.033
+
+--- [Frame 140/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (83.0%), Slap (10.0%), HelloLeft (4.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.017 | Min Seen: 0.016
+   -> ByeLeft    | Current: 0.581 | Min Seen: 0.581
+   -> ByeLeft    | Current: 0.608 | Min Seen: 0.608
+   -> Slap       | Current: 1.017 | Min Seen: 1.017
+   -> HelloLeft  | Current: 1.044 | Min Seen: 1.033
+
+--- [Frame 150/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (84.0%), Slap (10.0%), HelloLeft (3.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.017 | Min Seen: 0.016
+   -> ByeLeft    | Current: 0.581 | Min Seen: 0.581
+   -> ByeLeft    | Current: 0.607 | Min Seen: 0.607
+   -> Slap       | Current: 1.007 | Min Seen: 1.007
+   -> Slap       | Current: 1.046 | Min Seen: 1.046
+
+--- [Frame 160/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (80.0%), Slap (11.0%), HelloLeft (6.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.016 | Min Seen: 0.016
+   -> ByeLeft    | Current: 0.581 | Min Seen: 0.581
+   -> ByeLeft    | Current: 0.632 | Min Seen: 0.632
+   -> Slap       | Current: 1.004 | Min Seen: 1.004
+   -> Slap       | Current: 1.044 | Min Seen: 1.044
+
+--- [Frame 162/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (80.0%), Slap (11.0%), HelloLeft (6.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.016 | Min Seen: 0.016
+   -> ByeLeft    | Current: 0.581 | Min Seen: 0.581
+   -> ByeLeft    | Current: 0.632 | Min Seen: 0.632
+   -> Slap       | Current: 1.004 | Min Seen: 1.004
+   -> Slap       | Current: 1.044 | Min Seen: 1.044
+
+⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
+🌟 DECISION MADE: 'ByeLeft'
+   Confidence: 39.3%  (DTW Distance: 0.607)
+⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
+
+
+--- [Frame 170/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (80.0%), Slap (9.0%), HelloLeft (7.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.027 | Min Seen: 0.026
+   -> ByeLeft    | Current: 0.581 | Min Seen: 0.581
+   -> ByeLeft    | Current: 0.632 | Min Seen: 0.632
+   -> Slap       | Current: 1.002 | Min Seen: 1.002
+   -> HelloLeft  | Current: 1.042 | Min Seen: 1.042
+
+--- [Frame 180/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (75.0%), HelloLeft (12.0%), Slap (9.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.030 | Min Seen: 0.026
+   -> ByeLeft    | Current: 0.604 | Min Seen: 0.604
+   -> ByeLeft    | Current: 0.634 | Min Seen: 0.632
+   -> Slap       | Current: 1.004 | Min Seen: 1.002
+   -> HelloLeft  | Current: 1.043 | Min Seen: 1.042
+
+--- [Frame 190/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (63.0%), Hello (12.0%), Slap (11.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.033 | Min Seen: 0.026
+   -> ByeLeft    | Current: 0.604 | Min Seen: 0.604
+   -> ByeLeft    | Current: 0.634 | Min Seen: 0.632
+   -> Slap       | Current: 1.004 | Min Seen: 1.002
+   -> HelloLeft  | Current: 1.044 | Min Seen: 1.042
+
+--- [Frame 200/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (61.0%), Hello (13.0%), Slap (12.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.037 | Min Seen: 0.026
+   -> ByeLeft    | Current: 0.606 | Min Seen: 0.604
+   -> ByeLeft    | Current: 0.636 | Min Seen: 0.632
+   -> Slap       | Current: 1.008 | Min Seen: 1.002
+   -> Slap       | Current: 1.077 | Min Seen: 1.077
+
+--- [Frame 210/217] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (57.0%), Hello (14.0%), Slap (12.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.042 | Min Seen: 0.026
+   -> ByeLeft    | Current: 0.607 | Min Seen: 0.604
+   -> ByeLeft    | Current: 0.657 | Min Seen: 0.657
+   -> Slap       | Current: 1.040 | Min Seen: 1.039
+   -> Slap       | Current: 1.080 | Min Seen: 1.077
+
+--- Finished clip for 'ByeLeft' ---
+
+
+================================================================================
+Loading test file: E:\GP\ESL-glove-model-development\data\raw\test\Bye_exc_index+thumb.json
+================================================================================
+
+============================================================
+▶ Simulating detection for recorded sign: 'Bye'
+============================================================
+Preprocessed into 221 frames (~4.42 seconds)
+
+Starting simulation...
+
+--- [Frame 0/221] ----------------------------------------
+Activity State: IDLE
+Prefilter Thinking: Waiting for buffer (0% / 60% required)
+SDTW Distances (Lower is better):
+
+--- [Frame 10/221] ----------------------------------------
+Activity State: IDLE
+Prefilter Thinking: Waiting for buffer (0% / 60% required)
+SDTW Distances (Lower is better):
+
+--- [Frame 20/221] ----------------------------------------
+Activity State: IDLE
+Prefilter Thinking: Waiting for buffer (0% / 60% required)
+SDTW Distances (Lower is better):
+
+--- [Frame 30/221] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Waiting for buffer (6% / 60% required)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.740 | Min Seen: 0.740
+   -> ByeLeft    | Current: 0.896 | Min Seen: 0.896
+   -> ByeLeft    | Current: 0.981 | Min Seen: 0.981
+   -> Hello      | Current: 1.323 | Min Seen: 1.323
+   -> Hello      | Current: 1.371 | Min Seen: 1.371
+
+--- [Frame 40/221] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Waiting for buffer (26% / 60% required)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.751 | Min Seen: 0.740
+   -> ByeLeft    | Current: 0.908 | Min Seen: 0.896
+   -> ByeLeft    | Current: 0.991 | Min Seen: 0.981
+   -> Hello      | Current: 1.330 | Min Seen: 1.322
+   -> Hello      | Current: 1.379 | Min Seen: 1.370
+
+--- [Frame 50/221] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Waiting for buffer (46% / 60% required)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.727 | Min Seen: 0.727
+   -> ByeLeft    | Current: 0.893 | Min Seen: 0.893
+   -> ByeLeft    | Current: 0.972 | Min Seen: 0.972
+   -> Hello      | Current: 1.307 | Min Seen: 1.305
+   -> Hello      | Current: 1.364 | Min Seen: 1.363
+
+--- [Frame 60/221] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (46.0%), Hello (28.0%), Slap (18.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.707 | Min Seen: 0.707
+   -> ByeLeft    | Current: 0.854 | Min Seen: 0.854
+   -> ByeLeft    | Current: 0.935 | Min Seen: 0.935
+   -> Bye        | Current: 1.181 | Min Seen: 1.181
+   -> Bye        | Current: 1.229 | Min Seen: 1.229
+
+--- [Frame 70/221] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (47.0%), Hello (28.0%), Slap (18.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.715 | Min Seen: 0.707
+   -> ByeLeft    | Current: 0.857 | Min Seen: 0.854
+   -> ByeLeft    | Current: 0.938 | Min Seen: 0.935
+   -> Bye        | Current: 1.176 | Min Seen: 1.176
+   -> Bye        | Current: 1.229 | Min Seen: 1.229
+
+--- [Frame 80/221] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (44.0%), Hello (28.0%), Slap (20.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.725 | Min Seen: 0.707
+   -> ByeLeft    | Current: 0.942 | Min Seen: 0.935
+   -> ByeLeft    | Current: 0.964 | Min Seen: 0.964
+   -> Bye        | Current: 1.060 | Min Seen: 1.060
+   -> Bye        | Current: 1.095 | Min Seen: 1.095
+
+--- [Frame 90/221] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (44.0%), Slap (25.0%), Hello (24.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.889 | Min Seen: 0.888
+   -> ByeLeft    | Current: 0.953 | Min Seen: 0.935
+   -> ByeLeft    | Current: 0.973 | Min Seen: 0.964
+   -> Bye        | Current: 0.992 | Min Seen: 0.992
+   -> Bye        | Current: 1.077 | Min Seen: 1.076
+
+--- [Frame 100/221] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (41.0%), Slap (27.0%), Hello (24.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.897 | Min Seen: 0.888
+   -> Bye        | Current: 0.973 | Min Seen: 0.973
+   -> ByeLeft    | Current: 1.005 | Min Seen: 0.964
+   -> Bye        | Current: 1.078 | Min Seen: 1.076
+   -> Slap       | Current: 1.441 | Min Seen: 1.420
+
+--- [Frame 110/221] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (36.0%), Slap (32.0%), Hello (24.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.906 | Min Seen: 0.888
+   -> Bye        | Current: 0.944 | Min Seen: 0.944
+   -> ByeLeft    | Current: 1.042 | Min Seen: 0.964
+   -> Bye        | Current: 1.177 | Min Seen: 1.177
+   -> Bye        | Current: 1.485 | Min Seen: 1.483
+
+--- [Frame 120/221] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (38.0%), Slap (33.0%), Hello (20.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.801 | Min Seen: 0.801
+   -> Bye        | Current: 0.924 | Min Seen: 0.924
+   -> ByeLeft    | Current: 1.070 | Min Seen: 0.964
+   -> Bye        | Current: 1.118 | Min Seen: 1.118
+   -> Slap       | Current: 1.424 | Min Seen: 1.424
+
+--- [Frame 130/221] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (46.0%), Hello (25.0%), Slap (21.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.758 | Min Seen: 0.758
+   -> Bye        | Current: 0.876 | Min Seen: 0.876
+   -> Bye        | Current: 1.059 | Min Seen: 1.059
+   -> ByeLeft    | Current: 1.093 | Min Seen: 0.964
+   -> Slap       | Current: 1.348 | Min Seen: 1.348
+
+--- [Frame 140/221] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (46.0%), Hello (24.0%), Slap (22.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.749 | Min Seen: 0.748
+   -> Bye        | Current: 0.833 | Min Seen: 0.833
+   -> Bye        | Current: 1.014 | Min Seen: 1.014
+   -> Slap       | Current: 1.312 | Min Seen: 1.312
+   -> Slap       | Current: 1.378 | Min Seen: 1.377
+
+--- [Frame 150/221] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (49.0%), Hello (23.0%), Slap (20.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.745 | Min Seen: 0.744
+   -> Bye        | Current: 0.810 | Min Seen: 0.809
+   -> Slap       | Current: 1.279 | Min Seen: 1.277
+   -> Slap       | Current: 1.335 | Min Seen: 1.333
+   -> Bye        | Current: 1.374 | Min Seen: 1.373
+
+--- [Frame 160/221] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (45.0%), Hello (24.0%), Slap (22.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.750 | Min Seen: 0.744
+   -> Bye        | Current: 0.814 | Min Seen: 0.809
+   -> Bye        | Current: 1.046 | Min Seen: 1.046
+   -> Slap       | Current: 1.292 | Min Seen: 1.277
+   -> Slap       | Current: 1.349 | Min Seen: 1.333
+
+--- [Frame 170/221] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (40.0%), Hello (24.0%), Slap (18.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.625 | Min Seen: 0.625
+   -> Bye        | Current: 0.885 | Min Seen: 0.885
+   -> Slap       | Current: 1.164 | Min Seen: 1.164
+   -> Slap       | Current: 1.207 | Min Seen: 1.207
+   -> Slap       | Current: 1.269 | Min Seen: 1.269
+
+--- [Frame 180/221] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (35.0%), Hello (24.0%), Slap (21.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.557 | Min Seen: 0.557
+   -> Bye        | Current: 0.785 | Min Seen: 0.784
+   -> Bye        | Current: 0.817 | Min Seen: 0.817
+   -> Slap       | Current: 1.090 | Min Seen: 1.090
+   -> Slap       | Current: 1.100 | Min Seen: 1.100
+
+--- [Frame 190/221] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (31.0%), Hello (23.0%), Slap (20.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.548 | Min Seen: 0.548
+   -> Bye        | Current: 0.794 | Min Seen: 0.784
+   -> Bye        | Current: 0.824 | Min Seen: 0.817
+   -> Slap       | Current: 1.099 | Min Seen: 1.099
+   -> Slap       | Current: 1.103 | Min Seen: 1.103
+
+--- [Frame 200/221] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (30.0%), Hello (21.0%), Slap (20.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.537 | Min Seen: 0.537
+   -> Bye        | Current: 0.814 | Min Seen: 0.784
+   -> Bye        | Current: 0.893 | Min Seen: 0.893
+   -> Slap       | Current: 1.083 | Min Seen: 1.083
+   -> Slap       | Current: 1.084 | Min Seen: 1.084
+
+--- [Frame 210/221] ----------------------------------------
+Activity State: IDLE
+Prefilter Thinking: Bye (30.0%), Hello (21.0%), Slap (20.0%)
+SDTW Distances (Lower is better):
+
+--- [Frame 220/221] ----------------------------------------
+Activity State: IDLE
+Prefilter Thinking: Bye (30.0%), Hello (21.0%), Slap (20.0%)
+SDTW Distances (Lower is better):
+
+--- Finished clip for 'Bye' ---
+
+================================================================================
+Loading test file: E:\GP\ESL-glove-model-development\data\raw\test\Hel_L_exc_index+thumb.json
+================================================================================
+
+============================================================
+▶ Simulating detection for recorded sign: 'HelloLeft'
+============================================================
+Preprocessed into 209 frames (~4.18 seconds)
+
+Starting simulation...
+
+--- [Frame 0/209] ----------------------------------------
+Activity State: IDLE
+Prefilter Thinking: Waiting for buffer (0% / 60% required)
+SDTW Distances (Lower is better):
+
+--- [Frame 10/209] ----------------------------------------
+Activity State: IDLE
+Prefilter Thinking: Waiting for buffer (0% / 60% required)
+SDTW Distances (Lower is better):
+
+--- [Frame 20/209] ----------------------------------------
+Activity State: IDLE
+Prefilter Thinking: Waiting for buffer (0% / 60% required)
+SDTW Distances (Lower is better):
+
+--- [Frame 30/209] ----------------------------------------
+Activity State: IDLE
+Prefilter Thinking: Waiting for buffer (0% / 60% required)
+SDTW Distances (Lower is better):
+
+--- [Frame 40/209] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Waiting for buffer (18% / 60% required)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.158 | Min Seen: 0.158
+   -> Slap       | Current: 1.082 | Min Seen: 1.082
+   -> Bye        | Current: 1.132 | Min Seen: 1.131
+   -> Slap       | Current: 1.141 | Min Seen: 1.141
+   -> Slap       | Current: 1.164 | Min Seen: 1.164
+
+--- [Frame 50/209] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Waiting for buffer (38% / 60% required)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.158 | Min Seen: 0.155
+   -> Slap       | Current: 1.086 | Min Seen: 1.082
+   -> Bye        | Current: 1.139 | Min Seen: 1.131
+   -> Slap       | Current: 1.149 | Min Seen: 1.141
+   -> Slap       | Current: 1.173 | Min Seen: 1.164
+
+--- [Frame 60/209] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Waiting for buffer (58% / 60% required)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.171 | Min Seen: 0.155
+   -> Slap       | Current: 1.123 | Min Seen: 1.082
+   -> Bye        | Current: 1.165 | Min Seen: 1.131
+   -> Slap       | Current: 1.190 | Min Seen: 1.141
+   -> Slap       | Current: 1.209 | Min Seen: 1.164
+
+--- [Frame 70/209] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (64.0%), HelloLeft (16.0%), Slap (12.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.191 | Min Seen: 0.155
+   -> HelloLeft  | Current: 0.669 | Min Seen: 0.669
+   -> HelloLeft  | Current: 0.747 | Min Seen: 0.747
+   -> ByeLeft    | Current: 0.868 | Min Seen: 0.868
+   -> ByeLeft    | Current: 0.935 | Min Seen: 0.935
+
+--- [Frame 80/209] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (74.0%), HelloLeft (12.0%), Slap (11.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.212 | Min Seen: 0.155
+   -> HelloLeft  | Current: 0.655 | Min Seen: 0.655
+   -> HelloLeft  | Current: 0.727 | Min Seen: 0.727
+   -> ByeLeft    | Current: 0.868 | Min Seen: 0.867
+   -> ByeLeft    | Current: 0.936 | Min Seen: 0.935
+
+--- [Frame 90/209] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (75.0%), Slap (12.0%), HelloLeft (10.0%)
+SDTW Distances (Lower is better):
+   -> HelloLeft  | Current: 0.490 | Min Seen: 0.490
+   -> HelloLeft  | Current: 0.543 | Min Seen: 0.543
+   -> ByeLeft    | Current: 0.873 | Min Seen: 0.867
+   -> ByeLeft    | Current: 0.943 | Min Seen: 0.935
+   -> HelloLeft  | Current: 1.517 | Min Seen: 1.517
+
+--- [Frame 100/209] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (69.0%), HelloLeft (14.0%), Slap (13.0%)
+SDTW Distances (Lower is better):
+   -> HelloLeft  | Current: 0.474 | Min Seen: 0.474
+   -> HelloLeft  | Current: 0.505 | Min Seen: 0.505
+   -> ByeLeft    | Current: 0.520 | Min Seen: 0.518
+   -> ByeLeft    | Current: 0.886 | Min Seen: 0.867
+   -> ByeLeft    | Current: 0.962 | Min Seen: 0.935
+
+--- [Frame 110/209] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (67.0%), HelloLeft (16.0%), Slap (14.0%)
+SDTW Distances (Lower is better):
+   -> HelloLeft  | Current: 0.470 | Min Seen: 0.470
+   -> HelloLeft  | Current: 0.488 | Min Seen: 0.488
+   -> ByeLeft    | Current: 0.527 | Min Seen: 0.518
+   -> ByeLeft    | Current: 0.902 | Min Seen: 0.867
+   -> ByeLeft    | Current: 0.985 | Min Seen: 0.935
+
+--- [Frame 120/209] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (66.0%), HelloLeft (18.0%), Slap (12.0%)
+SDTW Distances (Lower is better):
+   -> HelloLeft  | Current: 0.509 | Min Seen: 0.509
+   -> ByeLeft    | Current: 0.536 | Min Seen: 0.518
+   -> HelloLeft  | Current: 0.549 | Min Seen: 0.549
+   -> ByeLeft    | Current: 0.919 | Min Seen: 0.867
+   -> HelloLeft  | Current: 1.410 | Min Seen: 1.410
+
+--- [Frame 126/209] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (66.0%), HelloLeft (18.0%), Slap (12.0%)
+SDTW Distances (Lower is better):
+   -> HelloLeft  | Current: 0.509 | Min Seen: 0.509
+   -> ByeLeft    | Current: 0.542 | Min Seen: 0.518
+   -> HelloLeft  | Current: 0.547 | Min Seen: 0.547
+   -> ByeLeft    | Current: 0.930 | Min Seen: 0.867
+   -> ByeLeft    | Current: 1.220 | Min Seen: 1.220
+
+⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
+🌟 DECISION MADE: 'HelloLeft'
+   Confidence: 53.0%  (DTW Distance: 0.470)
+⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
+
+
+--- [Frame 130/209] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (66.0%), HelloLeft (19.0%), Slap (11.0%)
+SDTW Distances (Lower is better):
+   -> HelloLeft  | Current: 0.498 | Min Seen: 0.498
+   -> HelloLeft  | Current: 0.532 | Min Seen: 0.532
+   -> ByeLeft    | Current: 0.546 | Min Seen: 0.518
+   -> ByeLeft    | Current: 0.938 | Min Seen: 0.867
+   -> ByeLeft    | Current: 1.221 | Min Seen: 1.220
+
+--- [Frame 140/209] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (65.0%), HelloLeft (19.0%), Slap (11.0%)
+SDTW Distances (Lower is better):
+   -> HelloLeft  | Current: 0.500 | Min Seen: 0.498
+   -> HelloLeft  | Current: 0.536 | Min Seen: 0.532
+   -> ByeLeft    | Current: 0.555 | Min Seen: 0.518
+   -> ByeLeft    | Current: 1.095 | Min Seen: 1.095
+   -> ByeLeft    | Current: 1.195 | Min Seen: 1.195
+
+--- [Frame 150/209] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (63.0%), HelloLeft (20.0%), Slap (14.0%)
+SDTW Distances (Lower is better):
+   -> HelloLeft  | Current: 0.503 | Min Seen: 0.498
+   -> HelloLeft  | Current: 0.543 | Min Seen: 0.532
+   -> ByeLeft    | Current: 0.614 | Min Seen: 0.614
+   -> ByeLeft    | Current: 1.095 | Min Seen: 1.095
+   -> ByeLeft    | Current: 1.195 | Min Seen: 1.195
+
+--- [Frame 160/209] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (72.0%), HelloLeft (14.0%), Slap (10.0%)
+SDTW Distances (Lower is better):
+   -> HelloLeft  | Current: 0.503 | Min Seen: 0.498
+   -> HelloLeft  | Current: 0.549 | Min Seen: 0.532
+   -> ByeLeft    | Current: 0.602 | Min Seen: 0.602
+   -> ByeLeft    | Current: 1.086 | Min Seen: 1.086
+   -> ByeLeft    | Current: 1.183 | Min Seen: 1.183
+
+--- [Frame 170/209] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (75.0%), HelloLeft (11.0%), Slap (10.0%)
+SDTW Distances (Lower is better):
+   -> HelloLeft  | Current: 0.509 | Min Seen: 0.509
+   -> ByeLeft    | Current: 0.571 | Min Seen: 0.571
+   -> HelloLeft  | Current: 0.589 | Min Seen: 0.589
+   -> ByeLeft    | Current: 1.067 | Min Seen: 1.067
+   -> ByeLeft    | Current: 1.152 | Min Seen: 1.152
+
+--- [Frame 174/209] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (75.0%), HelloLeft (11.0%), Slap (10.0%)
+SDTW Distances (Lower is better):
+   -> HelloLeft  | Current: 0.511 | Min Seen: 0.509
+   -> ByeLeft    | Current: 0.543 | Min Seen: 0.543
+   -> HelloLeft  | Current: 0.590 | Min Seen: 0.589
+   -> ByeLeft    | Current: 1.040 | Min Seen: 1.040
+   -> ByeLeft    | Current: 1.110 | Min Seen: 1.110
+
+⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
+🌟 DECISION MADE: 'HelloLeft'
+   Confidence: 49.7%  (DTW Distance: 0.503)
+⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
+
+
+--- [Frame 180/209] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (71.0%), HelloLeft (15.0%), Slap (10.0%)
+SDTW Distances (Lower is better):
+   -> HelloLeft  | Current: 0.514 | Min Seen: 0.509
+   -> ByeLeft    | Current: 0.516 | Min Seen: 0.516
+   -> HelloLeft  | Current: 0.594 | Min Seen: 0.589
+   -> ByeLeft    | Current: 1.020 | Min Seen: 1.020
+   -> ByeLeft    | Current: 1.084 | Min Seen: 1.084
+
+--- [Frame 190/209] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (58.0%), HelloLeft (13.0%), Hello (12.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.398 | Min Seen: 0.398
+   -> HelloLeft  | Current: 0.529 | Min Seen: 0.509
+   -> HelloLeft  | Current: 0.613 | Min Seen: 0.589
+   -> ByeLeft    | Current: 0.923 | Min Seen: 0.923
+   -> ByeLeft    | Current: 0.984 | Min Seen: 0.984
+
+--- [Frame 200/209] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (60.0%), Hello (13.0%), Slap (12.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.342 | Min Seen: 0.342
+   -> HelloLeft  | Current: 0.559 | Min Seen: 0.509
+   -> HelloLeft  | Current: 0.649 | Min Seen: 0.589
+   -> ByeLeft    | Current: 0.863 | Min Seen: 0.863
+   -> ByeLeft    | Current: 0.924 | Min Seen: 0.924
+
+--- Finished clip for 'HelloLeft' ---
+
+
+================================================================================
+Loading test file: E:\GP\ESL-glove-model-development\data\raw\test\Hel_exc_index+thumb.json
+================================================================================
+
+============================================================
+▶ Simulating detection for recorded sign: 'Hello'
+============================================================
+Preprocessed into 200 frames (~4.00 seconds)
+
+Starting simulation...
+
+--- [Frame 0/200] ----------------------------------------
+Activity State: IDLE
+Prefilter Thinking: Waiting for buffer (0% / 60% required)
+SDTW Distances (Lower is better):
+
+--- [Frame 10/200] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Waiting for buffer (12% / 60% required)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.670 | Min Seen: 0.670
+   -> ByeLeft    | Current: 0.860 | Min Seen: 0.860
+   -> ByeLeft    | Current: 0.871 | Min Seen: 0.871
+   -> HelloLeft  | Current: 0.885 | Min Seen: 0.885
+   -> HelloLeft  | Current: 1.063 | Min Seen: 1.063
+
+--- [Frame 20/200] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Waiting for buffer (32% / 60% required)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.636 | Min Seen: 0.636
+   -> ByeLeft    | Current: 0.861 | Min Seen: 0.860
+   -> ByeLeft    | Current: 0.873 | Min Seen: 0.871
+   -> HelloLeft  | Current: 0.886 | Min Seen: 0.885
+   -> HelloLeft  | Current: 1.064 | Min Seen: 1.063
+
+--- [Frame 30/200] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Waiting for buffer (52% / 60% required)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.637 | Min Seen: 0.636
+   -> ByeLeft    | Current: 0.863 | Min Seen: 0.860
+   -> ByeLeft    | Current: 0.874 | Min Seen: 0.871
+   -> HelloLeft  | Current: 0.891 | Min Seen: 0.885
+   -> HelloLeft  | Current: 1.068 | Min Seen: 1.063
+
+--- [Frame 40/200] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: ByeLeft (35.0%), Hello (20.0%), Bye (19.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.646 | Min Seen: 0.646
+   -> ByeLeft    | Current: 0.899 | Min Seen: 0.899
+   -> ByeLeft    | Current: 0.911 | Min Seen: 0.910
+   -> HelloLeft  | Current: 0.960 | Min Seen: 0.959
+   -> Bye        | Current: 1.057 | Min Seen: 1.057
+
+--- [Frame 50/200] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (26.0%), ByeLeft (26.0%), Hello (25.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.648 | Min Seen: 0.646
+   -> ByeLeft    | Current: 0.900 | Min Seen: 0.899
+   -> ByeLeft    | Current: 0.912 | Min Seen: 0.910
+   -> HelloLeft  | Current: 0.962 | Min Seen: 0.959
+   -> Bye        | Current: 1.039 | Min Seen: 1.036
+
+--- [Frame 60/200] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (37.0%), Hello (28.0%), ByeLeft (16.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.655 | Min Seen: 0.646
+   -> ByeLeft    | Current: 0.904 | Min Seen: 0.899
+   -> ByeLeft    | Current: 0.915 | Min Seen: 0.910
+   -> HelloLeft  | Current: 0.967 | Min Seen: 0.959
+   -> Bye        | Current: 1.049 | Min Seen: 1.036
+
+--- [Frame 70/200] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (40.0%), Hello (26.0%), Slap (19.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.670 | Min Seen: 0.646
+   -> ByeLeft    | Current: 0.916 | Min Seen: 0.899
+   -> ByeLeft    | Current: 0.927 | Min Seen: 0.910
+   -> HelloLeft  | Current: 0.980 | Min Seen: 0.959
+   -> Bye        | Current: 1.064 | Min Seen: 1.036
+
+--- [Frame 80/200] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (47.0%), Hello (28.0%), Slap (17.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.704 | Min Seen: 0.646
+   -> ByeLeft    | Current: 0.944 | Min Seen: 0.899
+   -> ByeLeft    | Current: 0.957 | Min Seen: 0.910
+   -> HelloLeft  | Current: 1.032 | Min Seen: 0.959
+   -> Bye        | Current: 1.094 | Min Seen: 1.036
+
+--- [Frame 90/200] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (47.0%), Hello (28.0%), Slap (19.0%)
+SDTW Distances (Lower is better):
+   -> ByeLeft    | Current: 0.771 | Min Seen: 0.646
+   -> Hello      | Current: 0.963 | Min Seen: 0.963
+   -> ByeLeft    | Current: 1.002 | Min Seen: 0.899
+   -> Hello      | Current: 1.103 | Min Seen: 1.103
+   -> Bye        | Current: 1.165 | Min Seen: 1.036
+
+--- [Frame 100/200] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (43.0%), Hello (27.0%), Slap (21.0%)
+SDTW Distances (Lower is better):
+   -> Hello      | Current: 0.877 | Min Seen: 0.877
+   -> Hello      | Current: 0.976 | Min Seen: 0.976
+   -> ByeLeft    | Current: 1.071 | Min Seen: 0.899
+   -> Hello      | Current: 1.098 | Min Seen: 1.098
+   -> Slap       | Current: 1.414 | Min Seen: 1.138
+
+--- [Frame 110/200] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (42.0%), Hello (29.0%), Slap (19.0%)
+SDTW Distances (Lower is better):
+   -> Hello      | Current: 0.895 | Min Seen: 0.895
+   -> Hello      | Current: 0.943 | Min Seen: 0.939
+   -> Hello      | Current: 1.041 | Min Seen: 1.041
+   -> Slap       | Current: 1.640 | Min Seen: 1.200
+   -> Bye        | Current: 1.769 | Min Seen: 1.769
+
+--- [Frame 120/200] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (43.0%), Hello (33.0%), Slap (15.0%)
+SDTW Distances (Lower is better):
+   -> Hello      | Current: 0.886 | Min Seen: 0.886
+   -> Hello      | Current: 0.951 | Min Seen: 0.939
+   -> Hello      | Current: 1.037 | Min Seen: 1.037
+   -> Bye        | Current: 1.763 | Min Seen: 1.762
+   -> Slap       | Current: 1.791 | Min Seen: 1.200
+
+--- [Frame 130/200] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (42.0%), Hello (31.0%), Slap (17.0%)
+SDTW Distances (Lower is better):
+   -> Hello      | Current: 0.880 | Min Seen: 0.880
+   -> Hello      | Current: 0.957 | Min Seen: 0.939
+   -> Hello      | Current: 1.032 | Min Seen: 1.032
+   -> Bye        | Current: 1.749 | Min Seen: 1.749
+   -> Bye        | Current: 1.849 | Min Seen: 1.849
+
+--- [Frame 140/200] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (41.0%), Hello (29.0%), Slap (22.0%)
+SDTW Distances (Lower is better):
+   -> Hello      | Current: 0.869 | Min Seen: 0.869
+   -> Hello      | Current: 0.956 | Min Seen: 0.939
+   -> Hello      | Current: 1.021 | Min Seen: 1.021
+   -> Bye        | Current: 1.751 | Min Seen: 1.749
+   -> Bye        | Current: 1.851 | Min Seen: 1.849
+
+--- [Frame 150/200] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (42.0%), Hello (29.0%), Slap (19.0%)
+SDTW Distances (Lower is better):
+   -> Hello      | Current: 0.868 | Min Seen: 0.868
+   -> Hello      | Current: 0.956 | Min Seen: 0.939
+   -> Bye        | Current: 1.748 | Min Seen: 1.748
+   -> Bye        | Current: 1.843 | Min Seen: 1.839
+   -> Bye        | Current: 1.852 | Min Seen: 1.849
+
+--- [Frame 160/200] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (39.0%), Hello (30.0%), Slap (22.0%)
+SDTW Distances (Lower is better):
+   -> Hello      | Current: 0.862 | Min Seen: 0.862
+   -> Hello      | Current: 0.954 | Min Seen: 0.939
+   -> Hello      | Current: 0.981 | Min Seen: 0.981
+   -> Bye        | Current: 1.748 | Min Seen: 1.748
+   -> Bye        | Current: 1.846 | Min Seen: 1.839
+
+--- [Frame 170/200] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Bye (34.0%), Hello (31.0%), Slap (24.0%)
+SDTW Distances (Lower is better):
+   -> Hello      | Current: 0.860 | Min Seen: 0.860
+   -> Hello      | Current: 0.922 | Min Seen: 0.922
+   -> Hello      | Current: 0.950 | Min Seen: 0.950
+   -> Bye        | Current: 1.749 | Min Seen: 1.748
+   -> Bye        | Current: 1.849 | Min Seen: 1.839
+
+--- [Frame 180/200] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Hello (32.0%), Bye (29.0%), Slap (23.0%)
+SDTW Distances (Lower is better):
+   -> Hello      | Current: 0.893 | Min Seen: 0.860
+   -> Hello      | Current: 0.938 | Min Seen: 0.938
+   -> Hello      | Current: 0.941 | Min Seen: 0.941
+   -> Bye        | Current: 1.750 | Min Seen: 1.750
+   -> Bye        | Current: 1.756 | Min Seen: 1.748
+
+--- [Frame 190/200] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Hello (28.0%), Bye (26.0%), Slap (23.0%)
+SDTW Distances (Lower is better):
+   -> Hello      | Current: 0.952 | Min Seen: 0.860
+   -> Hello      | Current: 0.961 | Min Seen: 0.938
+   -> Hello      | Current: 0.980 | Min Seen: 0.941
+   -> Bye        | Current: 1.289 | Min Seen: 1.289
+   -> Bye        | Current: 1.407 | Min Seen: 1.407
+
+--- Finished clip for 'Hello' ---
+
+
+================================================================================
+Loading test file: E:\GP\ESL-glove-model-development\data\raw\test\Slp_exc_index+thumb.json
+================================================================================
+
+============================================================
+▶ Simulating detection for recorded sign: 'Slap'
+============================================================
+Preprocessed into 203 frames (~4.06 seconds)
+
+Starting simulation...
+
+--- [Frame 0/203] ----------------------------------------
+Activity State: IDLE
+Prefilter Thinking: Waiting for buffer (0% / 60% required)
+SDTW Distances (Lower is better):
+
+--- [Frame 10/203] ----------------------------------------
+Activity State: IDLE
+Prefilter Thinking: Waiting for buffer (0% / 60% required)
+SDTW Distances (Lower is better):
+
+--- [Frame 20/203] ----------------------------------------
+Activity State: IDLE
+Prefilter Thinking: Waiting for buffer (0% / 60% required)
+SDTW Distances (Lower is better):
+
+--- [Frame 30/203] ----------------------------------------
+Activity State: IDLE
+Prefilter Thinking: Waiting for buffer (0% / 60% required)
+SDTW Distances (Lower is better):
+
+--- [Frame 40/203] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Waiting for buffer (10% / 60% required)
+SDTW Distances (Lower is better):
+   -> Bye        | Current: 0.932 | Min Seen: 0.932
+   -> Bye        | Current: 0.946 | Min Seen: 0.946
+   -> Slap       | Current: 0.953 | Min Seen: 0.953
+   -> Slap       | Current: 0.998 | Min Seen: 0.998
+   -> Slap       | Current: 1.020 | Min Seen: 1.020
+
+--- [Frame 50/203] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Waiting for buffer (30% / 60% required)
+SDTW Distances (Lower is better):
+   -> Bye        | Current: 0.928 | Min Seen: 0.928
+   -> Bye        | Current: 0.938 | Min Seen: 0.938
+   -> Slap       | Current: 0.949 | Min Seen: 0.949
+   -> Slap       | Current: 0.993 | Min Seen: 0.993
+   -> Slap       | Current: 1.014 | Min Seen: 1.014
+
+--- [Frame 60/203] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Waiting for buffer (50% / 60% required)
+SDTW Distances (Lower is better):
+   -> Bye        | Current: 0.925 | Min Seen: 0.925
+   -> Bye        | Current: 0.935 | Min Seen: 0.935
+   -> Slap       | Current: 0.949 | Min Seen: 0.948
+   -> Slap       | Current: 0.994 | Min Seen: 0.993
+   -> Slap       | Current: 1.015 | Min Seen: 1.013
+
+--- [Frame 70/203] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Hello (31.0%), Bye (28.0%), Slap (25.0%)
+SDTW Distances (Lower is better):
+   -> Bye        | Current: 0.927 | Min Seen: 0.925
+   -> Bye        | Current: 0.936 | Min Seen: 0.935
+   -> Slap       | Current: 0.950 | Min Seen: 0.948
+   -> Slap       | Current: 0.996 | Min Seen: 0.993
+   -> Bye        | Current: 1.253 | Min Seen: 1.251
+
+--- [Frame 80/203] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Hello (29.0%), Slap (28.0%), Bye (28.0%)
+SDTW Distances (Lower is better):
+   -> Bye        | Current: 0.886 | Min Seen: 0.886
+   -> Bye        | Current: 0.901 | Min Seen: 0.901
+   -> Slap       | Current: 0.966 | Min Seen: 0.966
+   -> Slap       | Current: 1.013 | Min Seen: 1.013
+   -> Slap       | Current: 1.028 | Min Seen: 1.026
+
+--- [Frame 90/203] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Slap (33.0%), Hello (28.0%), Bye (24.0%)
+SDTW Distances (Lower is better):
+   -> Bye        | Current: 0.839 | Min Seen: 0.839
+   -> Bye        | Current: 0.884 | Min Seen: 0.884
+   -> Slap       | Current: 0.937 | Min Seen: 0.937
+   -> Slap       | Current: 0.982 | Min Seen: 0.982
+   -> Slap       | Current: 0.998 | Min Seen: 0.998
+
+--- [Frame 100/203] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Slap (33.0%), Hello (27.0%), Bye (23.0%)
+SDTW Distances (Lower is better):
+   -> Bye        | Current: 0.843 | Min Seen: 0.843
+   -> Bye        | Current: 0.885 | Min Seen: 0.884
+   -> Slap       | Current: 0.915 | Min Seen: 0.915
+   -> Slap       | Current: 0.968 | Min Seen: 0.968
+   -> Slap       | Current: 0.970 | Min Seen: 0.970
+
+--- [Frame 110/203] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Slap (35.0%), Hello (25.0%), Bye (23.0%)
+SDTW Distances (Lower is better):
+   -> Slap       | Current: 0.827 | Min Seen: 0.827
+   -> Slap       | Current: 0.841 | Min Seen: 0.841
+   -> Bye        | Current: 0.846 | Min Seen: 0.843
+   -> Slap       | Current: 0.849 | Min Seen: 0.849
+   -> Bye        | Current: 0.890 | Min Seen: 0.884
+
+--- [Frame 120/203] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Slap (41.0%), Bye (22.0%), Hello (20.0%)
+SDTW Distances (Lower is better):
+   -> Slap       | Current: 0.816 | Min Seen: 0.816
+   -> Slap       | Current: 0.823 | Min Seen: 0.823
+   -> Slap       | Current: 0.824 | Min Seen: 0.824
+   -> Bye        | Current: 0.852 | Min Seen: 0.843
+   -> Bye        | Current: 0.897 | Min Seen: 0.884
+
+--- [Frame 130/203] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Slap (37.0%), Bye (23.0%), Hello (21.0%)
+SDTW Distances (Lower is better):
+   -> Slap       | Current: 0.820 | Min Seen: 0.816
+   -> Slap       | Current: 0.824 | Min Seen: 0.824
+   -> Slap       | Current: 0.826 | Min Seen: 0.823
+   -> Bye        | Current: 0.855 | Min Seen: 0.843
+   -> Bye        | Current: 0.953 | Min Seen: 0.953
+
+--- [Frame 140/203] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Slap (42.0%), Hello (24.0%), Bye (22.0%)
+SDTW Distances (Lower is better):
+   -> Slap       | Current: 0.820 | Min Seen: 0.819
+   -> Slap       | Current: 0.823 | Min Seen: 0.816
+   -> Bye        | Current: 0.851 | Min Seen: 0.843
+   -> Bye        | Current: 0.920 | Min Seen: 0.920
+   -> Bye        | Current: 1.035 | Min Seen: 1.035
+
+--- [Frame 150/203] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Slap (42.0%), Hello (26.0%), Bye (22.0%)
+SDTW Distances (Lower is better):
+   -> Slap       | Current: 0.821 | Min Seen: 0.819
+   -> Slap       | Current: 0.827 | Min Seen: 0.816
+   -> Slap       | Current: 0.858 | Min Seen: 0.858
+   -> Bye        | Current: 0.859 | Min Seen: 0.859
+   -> Bye        | Current: 0.890 | Min Seen: 0.890
+
+--- [Frame 160/203] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Slap (34.0%), Hello (31.0%), Bye (23.0%)
+SDTW Distances (Lower is better):
+   -> Slap       | Current: 0.831 | Min Seen: 0.831
+   -> Bye        | Current: 0.847 | Min Seen: 0.846
+   -> Slap       | Current: 0.850 | Min Seen: 0.850
+   -> Slap       | Current: 0.861 | Min Seen: 0.858
+   -> Bye        | Current: 0.878 | Min Seen: 0.877
+
+--- [Frame 170/203] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Slap (35.0%), Hello (31.0%), Bye (23.0%)
+SDTW Distances (Lower is better):
+   -> Slap       | Current: 0.832 | Min Seen: 0.831
+   -> Bye        | Current: 0.849 | Min Seen: 0.846
+   -> Bye        | Current: 0.849 | Min Seen: 0.849
+   -> Slap       | Current: 0.854 | Min Seen: 0.850
+   -> Slap       | Current: 0.867 | Min Seen: 0.858
+
+--- [Frame 180/203] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Slap (31.0%), Hello (30.0%), Bye (29.0%)
+SDTW Distances (Lower is better):
+   -> Slap       | Current: 0.837 | Min Seen: 0.831
+   -> Bye        | Current: 0.854 | Min Seen: 0.846
+   -> Bye        | Current: 0.862 | Min Seen: 0.861
+   -> Slap       | Current: 0.863 | Min Seen: 0.850
+   -> Slap       | Current: 0.952 | Min Seen: 0.951
+
+--- [Frame 190/203] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Slap (26.0%), Hello (25.0%), Bye (23.0%)
+SDTW Distances (Lower is better):
+   -> Slap       | Current: 0.844 | Min Seen: 0.831
+   -> Bye        | Current: 0.863 | Min Seen: 0.846
+   -> Bye        | Current: 0.866 | Min Seen: 0.861
+   -> Slap       | Current: 0.874 | Min Seen: 0.850
+   -> Slap       | Current: 0.952 | Min Seen: 0.951
+
+--- [Frame 200/203] ----------------------------------------
+Activity State: ACTIVE
+Prefilter Thinking: Hello (27.0%), Slap (24.0%), Bye (23.0%)
+SDTW Distances (Lower is better):
+   -> Slap       | Current: 0.862 | Min Seen: 0.862
+   -> Bye        | Current: 0.868 | Min Seen: 0.861
+   -> Bye        | Current: 0.870 | Min Seen: 0.846
+   -> Slap       | Current: 0.875 | Min Seen: 0.875
+   -> Slap       | Current: 0.918 | Min Seen: 0.918
+
+--- Finished clip for 'Slap' ---
