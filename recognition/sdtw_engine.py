@@ -125,8 +125,8 @@ class StreamingSDTW:
 class SDTWEngine:
     """Manages multiple StreamingSDTW instances for candidate templates."""
     
-    def __init__(self, all_templates: dict, weights: np.ndarray, config, class_thresholds: dict = None):
-        self.all_templates = all_templates  # {label: [template1, ...]}
+    def __init__(self, templates: dict, weights: np.ndarray, config, class_thresholds: dict = None):
+        self.templates = templates  # {label: [template1, ...]}
         self.weights = weights
         self.default_threshold = config.SDTW_DETECTION_THRESHOLD
         self.class_thresholds = class_thresholds if class_thresholds is not None else {}
@@ -139,7 +139,7 @@ class SDTWEngine:
         """Called when pre-filter produces new top-K candidates."""
         new_keys = set()
         for label in candidate_labels:
-            for idx, tmpl in enumerate(self.all_templates.get(label, [])):
+            for idx, tmpl in enumerate(self.templates.get(label, [])):
                 key = (label, idx)
                 new_keys.add(key)
                 if key not in self.active_matchers:

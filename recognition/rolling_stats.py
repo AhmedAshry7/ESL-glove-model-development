@@ -48,7 +48,7 @@ class RollingStatsBuffer:
             current_pos = self.idx % self.window_size
             return np.vstack((self.buffer[current_pos:], self.buffer[:current_pos]))
 
-    def get_stats_features(self) -> np.ndarray:
+    def calc_features(self) -> np.ndarray:
         """
         Extract fixed-length Option-D feature vector from current buffer.
 

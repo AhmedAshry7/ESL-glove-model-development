@@ -66,14 +66,14 @@ class NonMaximumSuppression:
                                 fB = [frame_history[f] for f in range(det['global_start_frame_est'], det['global_end_frame']+1) if f in frame_history]
                                 
                                 if len(fA) > 0 and len(fB) > 0:
-                                    tmpl_A = templates[lA][acc['template_idx']]
-                                    tmpl_B = templates[lB][det['template_idx']]
+                                    template_A = templates[lA][acc['template_idx']]
+                                    template_B = templates[lB][det['template_idx']]
                                     
                                     from recognition.sdtw_engine import compute_static_dtw
                                     import numpy as np
                                     
-                                    cost_A = compute_static_dtw(np.array(fA), tmpl_A, W_AB)
-                                    cost_B = compute_static_dtw(np.array(fB), tmpl_B, W_AB)
+                                    cost_A = compute_static_dtw(np.array(fA), template_A, W_AB)
+                                    cost_B = compute_static_dtw(np.array(fB), template_B, W_AB)
                                     
                                     if cost_B < cost_A:
                                         # The new detection is actually better! Swap them.

@@ -3,11 +3,7 @@ import csv
 import numpy as np
 from collections import defaultdict
 
-def load_sequences_from_csv(csv_path: str) -> list:
-    """Reads a CSV file and groups rows by sample_id.
-    Returns a list of dicts: [{'label': str, 'frames': np.ndarray}, ...]
-    where frames has shape (N, 57) [timestamp, f0...f55].
-    """
+def load_sequences(csv_path: str) -> list:
     if not os.path.exists(csv_path):
         print(f"Warning: CSV file not found: {csv_path}")
         return []
