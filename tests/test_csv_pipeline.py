@@ -4,7 +4,7 @@ import numpy as np
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import config.pipeline_config as cfg
-from preprocessing.stream_preprocessor import preprocess_stream, normalize_frames
+from preprocessing.stream_preprocessor import preprocess_stream
 from inference.continuous_recognizer import ContinuousRecognizer
 from data.csv_loader import load_sequences
 
