@@ -122,16 +122,19 @@ class ContinuousRecognizer:
             if self.was_active:
                 # Transition ACTIVE → IDLE: Force emit any detections stuck in a valley
                 forced_detections = self.sdtw_engine.force_emit_all(self.frame_count)
+                # Gate before NMS to avoid triggering cooldown for weak false positives
+                forced_detections = [d for d in forced_detections if (1.0 - d['distance']) >= cfg.CONFIDENCE_THRESHOLD]
+
                 window_frames = int(cfg.NMS_WINDOW_SECONDS * cfg.TARGET_SAMPLE_HZ)
                 emissions = self.nms.process_detections(
                     forced_detections, self.frame_count, window_frames, 
-                    self.frame_history, self.disc_weights, self.all_templates
+                    self.frame_history, self.disc_weights, self.all_templates, force_flush=True
                 )
             else:
                 window_frames = int(cfg.NMS_WINDOW_SECONDS * cfg.TARGET_SAMPLE_HZ)
                 emissions = self.nms.process_detections(
                     [], self.frame_count, window_frames, 
-                    self.frame_history, self.disc_weights, self.all_templates
+                    self.frame_history, self.disc_weights, self.all_templates, force_flush=True
                 )
                 
             self.was_active = False
@@ -160,6 +163,9 @@ class ContinuousRecognizer:
 
         # ── 4. SDTW Engine ────────────────────────────────────────────────────
         new_detections = self.sdtw_engine.feed(frame, self.frame_count)
+        # Gate before NMS to avoid triggering cooldown for weak false positives
+        new_detections = [d for d in new_detections if (1.0 - d['distance']) >= cfg.CONFIDENCE_THRESHOLD]
+
 
         # ── 5. Non-Maximum Suppression (NMS) ──────────────────────────────────
         window_frames = int(cfg.NMS_WINDOW_SECONDS * cfg.TARGET_SAMPLE_HZ)

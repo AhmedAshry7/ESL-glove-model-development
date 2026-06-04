@@ -11,7 +11,7 @@ class NonMaximumSuppression:
         self.last_global_emission = -9999  # global_frame
         self.pending_emissions = []
         
-    def process_detections(self, new_detections: list, current_frame: int, window_frames=150, frame_history: dict = None, disc_weights: dict = None, templates: dict = None) -> list:
+    def process_detections(self, new_detections: list, current_frame: int, window_frames=150, frame_history: dict = None, disc_weights: dict = None, templates: dict = None, force_flush: bool = False) -> list:
         """
         Takes detections from current frame, adds to sliding window,
         resolves overlaps, and returns any final emitted detections.
@@ -104,7 +104,7 @@ class NonMaximumSuppression:
             first_det_frame = min(d['global_end_frame'] for d in self.pending_emissions)
             
             # Wait 10 frames (200ms) after the first candidate to see if a better one finishes
-            if current_frame - first_det_frame >= 10:
+            if force_flush or current_frame - first_det_frame >= 10:
                 if current_frame - self.last_global_emission >= self.cooldown_frames:
                     emitted.append(best_det)
                     self.last_global_emission = current_frame

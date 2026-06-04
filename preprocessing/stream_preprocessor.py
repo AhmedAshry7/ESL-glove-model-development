@@ -38,25 +38,34 @@ def normalize_frames(frames: np.ndarray, norm_stats: dict) -> np.ndarray:
     Apply z-score normalization to finger channels only.
 
     Quaternion (IMU) channels are left untouched — their angular-distance
-    metric in the SDTW engine is already scale-invariant, and zeroing the
-    mean of a unit-quaternion component would break that metric.
+    metric in the SDTW engine is already scale-invariant.
+
+    Channels with near-zero std (constant across training) are zeroed out
+    rather than divided by a tiny number, preventing value explosions.
 
     Args:
-        frames:     (N, 56) array of preprocessed frames
-        norm_stats: dict with keys 'mean' and 'std', each shape (56,).
-                    std values for IMU channels should be 1.0 so they pass
-                    through unchanged.
+        frames:     (N, 56) or (56,) array of preprocessed frames
+        norm_stats: dict with keys 'mean', 'std', and 'active_mask' (optional)
 
     Returns:
-        (N, 56) normalized array
+        Normalized array of same shape as input
     """
-    out = frames.copy()
-    mean = norm_stats['mean']   # (56,)
-    std  = norm_stats['std']    # (56,) — IMU channels have std=1.0
+    was_1d = frames.ndim == 1
+    out = np.atleast_2d(frames).copy().astype(float)
 
-    # Only apply to finger channels; IMU channels divide by 1.0 (no-op)
-    out = (out - mean) / std
-    return out
+    mean = norm_stats['mean']   # (56,)
+    std  = norm_stats['std']    # (56,)
+
+    # Identify dead channels (std ~= 1e-6 means clamped due to zero variance)
+    dead_mask = std < 0.01   # finger channels with no real variation
+
+    # Apply z-score only to alive channels
+    out = (out - mean) / np.where(dead_mask, 1.0, std)
+
+    # Zero out dead channels — they carry no information
+    out[:, dead_mask] = 0.0
+
+    return out[0] if was_1d else out
 
 def compute_normalization_stats(all_frames_list: list) -> dict:
     """
@@ -65,8 +74,8 @@ def compute_normalization_stats(all_frames_list: list) -> dict:
     IMU channels (16-27 and 44-55) get mean=0.0 and std=1.0 so that
     normalize_frames() is a no-op for them.
 
-    Args:
-        all_frames_list: list of (N_i, 56) arrays from all training recordings
+    Channels with zero variance (std < 1.0) use std=1.0 so they
+    are treated as pass-through and then zeroed by normalize_frames.
 
     Returns:
         dict with 'mean' (56,) and 'std' (56,) arrays
@@ -80,12 +89,13 @@ def compute_normalization_stats(all_frames_list: list) -> dict:
     imu_indices    = list(range(16, 28)) + list(range(44, 56))
 
     mean = np.zeros(56)
-    std  = np.ones(56)   # default 1.0 → no-op for IMU channels
+    std  = np.ones(56)   # default 1.0
 
     mean[finger_indices] = np.mean(combined[:, finger_indices], axis=0)
     raw_std = np.std(combined[:, finger_indices], axis=0)
-    # Clamp to avoid divide-by-zero on channels with no variation
-    std[finger_indices] = np.where(raw_std > 1e-6, raw_std, 1e-6)
+    # Use real std only where variation exists; dead channels get std=1.0
+    # (normalize_frames will then zero them out via the dead_mask logic)
+    std[finger_indices] = np.where(raw_std > 1.0, raw_std, 1.0)
 
     # IMU channels: pass-through
     mean[imu_indices] = 0.0

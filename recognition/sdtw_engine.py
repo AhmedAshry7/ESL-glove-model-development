@@ -4,9 +4,9 @@ class StreamingSDTW:
     """Incremental SDTW computation for a single template."""
     
     def __init__(self, template: np.ndarray, weights: np.ndarray, threshold: float, promising_ratio: float = 0.7):
-        self.template = template            # (M, 28)
+        self.template = template            # (M, 56)
         self.M = len(template)
-        self.weights = weights              # (28,)
+        self.weights = weights              # (56,)
         self.threshold = threshold
         self.promising_ratio = promising_ratio
         
@@ -30,18 +30,17 @@ class StreamingSDTW:
         curr_col = np.zeros(self.M + 1)
         curr_col[0] = 0  # SDTW: can start matching at any point
         
-        # Calculate costs combining Euclidean (fingers) and Angular (IMUs)
+        # Calculate costs: Weighted Euclidean for fingers, Angular for IMUs
         costs = np.zeros(self.M)
         
-        # 1. Finger distances (Euclidean squared)
+        # 1. Finger distances (weighted squared Euclidean)
         finger_idx = list(range(0, 16)) + list(range(28, 44))
         diff_fingers = frame[finger_idx] - self.template[:, finger_idx]
         costs += np.sum(self.weights[finger_idx] * (diff_fingers ** 2), axis=1)
         
-        # 2. IMU distances (Angular 1 - |dot|)
+        # 2. IMU distances (Angular: 1 - |dot product|)
         imu_starts = [16, 20, 24, 44, 48, 52]
         for s in imu_starts:
-            # weight of this specific IMU is the sum of its 4 component weights
             imu_weight = np.sum(self.weights[s:s+4])
             if imu_weight > 0:
                 dot = np.sum(frame[s:s+4] * self.template[:, s:s+4], axis=1)
@@ -200,41 +199,46 @@ class SDTWEngine:
 
 def compute_static_dtw(test_frames: np.ndarray, template: np.ndarray, weights: np.ndarray) -> float:
     """
-    Computes a basic full DTW distance between a segment of test frames and a template,
-    using custom discriminative weights. Used by NMS to break ties.
+    Vectorized full DTW between a test segment and a template.
+    Used by NMS to break ties between competing detections.
+    Uses the same weighted Euclidean + angular-IMU cost as StreamingSDTW.
     """
     N, M = len(test_frames), len(template)
     if N == 0 or M == 0:
         return float('inf')
-        
-    # Precompute cost matrix (N x M)
-    costs = np.zeros((N, M))
     
     finger_idx = list(range(0, 16)) + list(range(28, 44))
-    
-    # We can vectorize over M for each i
-    for i in range(N):
-        diff_fingers = test_frames[i, finger_idx] - template[:, finger_idx]
-        costs[i, :] += np.sum(weights[finger_idx] * (diff_fingers ** 2), axis=1)
-        
     imu_starts = [16, 20, 24, 44, 48, 52]
+
+    # ── Precompute cost matrix fully vectorized (N x M) ──────────────────────
+    # Finger cost: broadcast (N,F) - (M,F) → (N,M,F) → weighted sum → (N,M)
+    diff = test_frames[:, np.newaxis, :][:, :, finger_idx] - template[np.newaxis, :, :][:, :, finger_idx]
+    cost_matrix = np.sum(weights[finger_idx] * (diff ** 2), axis=2)  # (N, M)
+
+    # IMU angular cost
     for s in imu_starts:
         imu_weight = np.sum(weights[s:s+4])
         if imu_weight > 0:
-            for i in range(N):
-                dot = np.sum(test_frames[i, s:s+4] * template[:, s:s+4], axis=1)
-                costs[i, :] += imu_weight * (1.0 - np.abs(dot))
-                
-    # Basic DP matrix
-    dtw = np.full((N + 1, M + 1), np.inf)
-    dtw[0, 0] = 0
+            # (N,4) dot (M,4) → (N,M)
+            dot = test_frames[:, np.newaxis, s:s+4] * template[np.newaxis, :, s:s+4]
+            dot = np.sum(dot, axis=2)
+            cost_matrix += imu_weight * (1.0 - np.abs(dot))
     
+    # ── DP path ──────────────────────────────────────────────────────────────
+    dtw = np.full((N + 1, M + 1), np.inf)
+    dtw[0, 0] = 0.0
+    
+    # Vectorize row-by-row (M loop stays, N is lifted to rows)
     for i in range(1, N + 1):
+        prev_row = dtw[i - 1, :]        # (M+1,)
+        curr_row = np.full(M + 1, np.inf)
+        curr_row[0] = np.inf            # standard DTW (not SDTW) for tie-breaking
         for j in range(1, M + 1):
-            dtw[i, j] = costs[i-1, j-1] + min(
-                dtw[i-1, j],
-                dtw[i, j-1],
-                dtw[i-1, j-1]
+            curr_row[j] = cost_matrix[i-1, j-1] + min(
+                prev_row[j],
+                curr_row[j-1],
+                prev_row[j-1]
             )
-            
+        dtw[i, :] = curr_row
+
     return dtw[N, M] / M

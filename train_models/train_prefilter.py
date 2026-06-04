@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import config.pipeline_config as cfg
 from features_engineering.prefilter_features import extract_prefilter_dataset, load_norm_stats
 
-def train_prefilter(raw_dir: str, model_dir: str, disabled_groups: list = []):
+def train_prefilter(train_csv_path: str, model_dir: str, disabled_groups: list = []):
     """
     Train a Random Forest classifier on Option-D rolling features to act as
     the Pre-filter.  Saves the trained model to model_dir/prefilter_rf.joblib.
@@ -22,11 +22,11 @@ def train_prefilter(raw_dir: str, model_dir: str, disabled_groups: list = []):
         print("  Run build_template_db.py first, then re-train the prefilter.")
         print("  Continuing without normalization (results will be suboptimal).")
 
-    print(f"Extracting features from {raw_dir}…")
-    X, Y = extract_prefilter_dataset(raw_dir, disabled_groups, norm_stats=norm_stats)
+    print(f"Extracting features from {train_csv_path}…")
+    X, Y = extract_prefilter_dataset(train_csv_path, disabled_groups, norm_stats=norm_stats)
 
     if len(X) == 0:
-        print("No training data found. Make sure you have data in raw_dir.")
+        print("No training data found. Make sure you have data in train_csv_path.")
         return
 
     print(f"Training Random Forest on {len(X)} samples with {X.shape[1]} features…")
@@ -47,7 +47,6 @@ def train_prefilter(raw_dir: str, model_dir: str, disabled_groups: list = []):
     print(f"Model saved to {model_path}")
 
 if __name__ == "__main__":
-    raw_dir   = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "raw")
+    train_csv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "processed_csv", "train.csv")
     model_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models")
-    train_prefilter(raw_dir, model_dir, disabled_groups=cfg.DISABLED_FEATURE_GROUPS)
-
+    train_prefilter(train_csv_path, model_dir, disabled_groups=cfg.DISABLED_FEATURE_GROUPS)

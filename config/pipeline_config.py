@@ -44,7 +44,7 @@ FEATURE_GROUP_ALIASES = {
     'all_imus':          ['all_right_imus', 'all_left_imus'],
 }
 
-DISABLED_FEATURE_GROUPS = ['left_index', 'left_thumb']
+DISABLED_FEATURE_GROUPS = []
 
 # ── Sampling ──
 TARGET_SAMPLE_HZ = 50.0
@@ -59,8 +59,9 @@ IDLE_FRAMES_REQUIRED = 15    # 15 frames @ 50Hz = 300ms
 
 # Normalized-scale threshold — after z-score normalization the finger channels
 # are in units of standard deviations. A frame-to-frame change of 0.05 sigma
-# across all active channels is a reasonable "still" boundary.
-FINGER_IDLE_THRESHOLD_NORM = 0.05 * 10  # sum across ~10 active channels ≈ 0.5
+# across active channels is a reasonable "still" boundary.
+# Empirically measured: signing sequences have finger_vel ~0.06 at mid-sign.
+FINGER_IDLE_THRESHOLD_NORM = 0.05
 
 # ── Pre-Filter (Random Forest) ──
 ROLLING_WINDOW_SIZE = 50       # 50 frames @ 50Hz = 1.0 second
@@ -73,20 +74,18 @@ PREFILTER_MIN_FILL_RATIO = 0.6   # 30 of 50 frames must be present
 # Dynamic top-K: use 15% of vocabulary size, with a floor of 2.
 # At inference time, pass the actual number of known classes.
 PREFILTER_TOP_K_RATIO = 0.15
-PREFILTER_TOP_K_MIN   = 3
+PREFILTER_TOP_K_MIN   = 8
 
 def get_top_k(n_classes: int) -> int:
     """Return the number of SDTW candidates to activate given vocabulary size."""
     return max(PREFILTER_TOP_K_MIN, math.ceil(PREFILTER_TOP_K_RATIO * n_classes))
 
 # ── SDTW Engine ──
-# After z-score normalization of finger channels (raw integers → ~N(0,1)):
-#   • A finger channel 1-sigma different per frame costs ~1.0 * weight
-#   • An IMU angular miss costs ~0.2 * weight  (1 - |cos(30°)| ≈ 0.13)
-# For a well-matching 50-frame window the normalized DTW cost is typically
-# in the range 0.3–2.0. The threshold is set conservatively at 1.5 and
-# should be tuned empirically via leave-one-out on your template set.
-SDTW_DETECTION_THRESHOLD = 1.5   # Normalized DTW distance to trigger a match
+# After z-score normalization, the weighted Euclidean squared distance per frame
+# is bounded by the channel weights. Empirically, correct-class templates score
+# between 0.01 and 0.77 on test sequences, so we use 0.9 as the detection
+# threshold with some headroom. Tune upward if you get too many false positives.
+SDTW_DETECTION_THRESHOLD = 0.9   # Normalized DTW distance to trigger a match
 SDTW_PROMISING_RATIO = 0.7       # Keep template active if min_dist < threshold * ratio
 
 # Per-channel DTW weights (to be tuned via grid search).
@@ -116,4 +115,4 @@ NMS_COOLDOWN_FRAMES = 75          # 75 frames @ 50Hz = 1.5s cooldown for the *sa
 NMS_WINDOW_SECONDS = 3.0          # How far back to look for overlapping detections
 
 # ── Post-Processing ──
-CONFIDENCE_THRESHOLD = 0.35       # Minimum confidence to emit to UI/NLP
+CONFIDENCE_THRESHOLD = 0.46       # Minimum confidence to emit to UI/NLP
