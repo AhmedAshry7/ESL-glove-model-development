@@ -6,7 +6,7 @@ from collections import Counter
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import config.pipeline_config as cfg
-from preprocessing.stream_preprocessor import preprocess_stream
+from preprocessing.stream_preprocessor import preprocess_stream, normalize_frames
 from inference.continuous_recognizer import ContinuousRecognizer
 
 def test_continuous_pipeline_on_json(json_file: str, model_dir: str, split_name: str = "continuous_test"):
@@ -17,9 +17,18 @@ def test_continuous_pipeline_on_json(json_file: str, model_dir: str, split_name:
         sys.exit(1)
         
     with open(json_file, 'r', encoding='utf-8') as f:
-        sequences = json.load(f)
+        loaded_data = json.load(f)
     
-    print(f"Loaded {len(sequences)} continuous sequences from JSON.\n")
+    # Safely handle both a single continuous JSON dictionary AND a list of JSON objects
+    if isinstance(loaded_data, dict):
+        sequences = [loaded_data]
+    elif isinstance(loaded_data, list):
+        sequences = loaded_data
+    else:
+        print(f"Error: Unexpected JSON structure in {json_file}. Expected object or list.")
+        sys.exit(1)
+    
+    print(f"Loaded {len(sequences)} continuous sequence(s) from JSON.\n")
     
     recognizer = ContinuousRecognizer(model_dir)
     if recognizer.norm_stats is not None:
@@ -39,11 +48,18 @@ def test_continuous_pipeline_on_json(json_file: str, model_dir: str, split_name:
     for sequence_index, sign in enumerate(sequences):
         recognizer._reset_state()
         
+        # Now sign is guaranteed to be a dictionary
         ground_truth_str = sign['label']
         raw_frames = np.array(sign['frames'])
         
-        # Parse comma-separated ground truth labels into a clean list
-        gt_labels = [lbl.strip() for lbl in ground_truth_str.split(',') if lbl.strip()]
+        # Split comma-separated (or hyphen-separated) labels into a clean list
+        # Handles delimiters like: "marhaban,ana" or "marhaban-ana"
+        delimiters = [',', '-']
+        normalized_str = ground_truth_str
+        for d in delimiters:
+            normalized_str = normalized_str.replace(d, ',')
+            
+        gt_labels = [lbl.strip() for lbl in normalized_str.split(',') if lbl.strip()]
         
         for lbl in gt_labels:
             class_total[lbl] = class_total.get(lbl, 0) + 1
