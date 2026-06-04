@@ -97,14 +97,26 @@ class NonMaximumSuppression:
         
         # 2. If we have pending emissions, wait until N frames have passed since the FIRST pending emission
         if self.pending_emissions:
-            # Sort pending by distance (lowest first)
-            self.pending_emissions.sort(key=lambda x: x['distance'])
+            # ── Length-Aware Scoring ──
+            # Longer templates are more discriminative: a 120-frame match is more
+            # trustworthy than a 50-frame partial overlap. We apply a bonus that
+            # scales with (template_length / max_template_length) to give longer
+            # matches an advantage when distances are close.
+            LENGTH_BONUS_WEIGHT = 0.15  # max bonus = 15% of threshold
+            
+            max_len = max(d.get('template_length', 1) for d in self.pending_emissions)
+            
+            def score(d):
+                length_bonus = LENGTH_BONUS_WEIGHT * (d.get('template_length', 1) / max(max_len, 1))
+                return d['distance'] - length_bonus
+            
+            self.pending_emissions.sort(key=score)
             
             best_det = self.pending_emissions[0]
             first_det_frame = min(d['global_end_frame'] for d in self.pending_emissions)
             
-            # Wait 10 frames (200ms) after the first candidate to see if a better one finishes
-            if force_flush or current_frame - first_det_frame >= 10:
+            # Wait 20 frames (400ms) after the first candidate to see if a better one finishes
+            if force_flush or current_frame - first_det_frame >= 20:
                 if current_frame - self.last_global_emission >= self.cooldown_frames:
                     emitted.append(best_det)
                     self.last_global_emission = current_frame

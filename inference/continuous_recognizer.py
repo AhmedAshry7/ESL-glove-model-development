@@ -34,6 +34,7 @@ class ContinuousRecognizer:
         template_dir = os.path.join(model_dir, "templates")
         self.template_manager = TemplateManager(template_dir)
         self.all_templates = self.template_manager.get_templates()
+        self.class_thresholds = self.template_manager.get_thresholds()
         self.n_classes = len(self.all_templates)
 
         # ── Load Discriminative Weights ───────────────────────────────────────
@@ -66,7 +67,8 @@ class ContinuousRecognizer:
         self.sdtw_engine = SDTWEngine(
             all_templates=self.all_templates,
             weights=cfg.CHANNEL_WEIGHTS,
-            config=cfg
+            config=cfg,
+            class_thresholds=self.class_thresholds
         )
         self.nms = NonMaximumSuppression(
             overlap_threshold=cfg.NMS_OVERLAP_THRESHOLD,

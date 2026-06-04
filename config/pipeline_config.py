@@ -71,10 +71,10 @@ PREFILTER_INTERVAL = 10        # Re-evaluate top-K candidates every 10 frames (2
 # Prevents noisy early-window statistics from poisoning the prefilter.
 PREFILTER_MIN_FILL_RATIO = 0.6   # 30 of 50 frames must be present
 
-# Dynamic top-K: use 15% of vocabulary size, with a floor of 2.
-# At inference time, pass the actual number of known classes.
+# Dynamic top-K: use 15% of vocabulary size, with a floor.
+# With ≤30 classes, just activate all templates since SDTW is fast enough.
 PREFILTER_TOP_K_RATIO = 0.15
-PREFILTER_TOP_K_MIN   = 8
+PREFILTER_TOP_K_MIN   = 25
 
 def get_top_k(n_classes: int) -> int:
     """Return the number of SDTW candidates to activate given vocabulary size."""
@@ -111,7 +111,7 @@ if np.sum(CHANNEL_WEIGHTS) > 0:
 
 # ── Non-Maximum Suppression (NMS) ──
 NMS_OVERLAP_THRESHOLD = 0.5       # Discard detection if IoU overlap > 0.5
-NMS_COOLDOWN_FRAMES = 75          # 75 frames @ 50Hz = 1.5s cooldown for the *same* label
+NMS_COOLDOWN_FRAMES = 25          # 25 frames @ 50Hz = 0.5s cooldown between emissions
 NMS_WINDOW_SECONDS = 3.0          # How far back to look for overlapping detections
 
 # ── Post-Processing ──

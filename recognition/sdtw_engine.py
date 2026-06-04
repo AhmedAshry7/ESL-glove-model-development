@@ -12,7 +12,7 @@ class StreamingSDTW:
         
         self.in_detection_zone = False
         self.patience_counter = 0
-        self.PATIENCE_MAX = 5  # frames to wait after valley bottom
+        self.PATIENCE_MAX = 10  # frames to wait after valley bottom before emitting
         self.reset()
     
     def reset(self):
@@ -80,6 +80,7 @@ class StreamingSDTW:
                     'end_frame': self.min_dist_frame,
                     'start_frame_est': self.min_dist_frame - self.M,
                     'distance': self.min_dist,
+                    'template_length': self.M,
                 }
                 self.reset()
                 return detection
@@ -90,6 +91,7 @@ class StreamingSDTW:
                     'end_frame': self.min_dist_frame,
                     'start_frame_est': self.min_dist_frame - self.M,
                     'distance': self.min_dist,
+                    'template_length': self.M,
                 }
                 self.reset()
                 return detection
@@ -108,6 +110,7 @@ class StreamingSDTW:
                 'end_frame': self.min_dist_frame,
                 'start_frame_est': self.min_dist_frame - self.M,
                 'distance': self.min_dist,
+                'template_length': self.M,
             }
             self.reset()
             return detection
@@ -122,10 +125,11 @@ class StreamingSDTW:
 class SDTWEngine:
     """Manages multiple StreamingSDTW instances for candidate templates."""
     
-    def __init__(self, all_templates: dict, weights: np.ndarray, config):
+    def __init__(self, all_templates: dict, weights: np.ndarray, config, class_thresholds: dict = None):
         self.all_templates = all_templates  # {label: [template1, ...]}
         self.weights = weights
-        self.threshold = config.SDTW_DETECTION_THRESHOLD
+        self.default_threshold = config.SDTW_DETECTION_THRESHOLD
+        self.class_thresholds = class_thresholds if class_thresholds is not None else {}
         self.promising_ratio = config.SDTW_PROMISING_RATIO
         self.active_matchers = {}           # {(label, idx): StreamingSDTW}
         self.frozen_matchers = {}           # {(label, idx): StreamingSDTW}
@@ -143,8 +147,9 @@ class SDTWEngine:
                         # Restore frozen state without reset
                         self.active_matchers[key] = self.frozen_matchers.pop(key)
                     else:
+                        thresh = self.class_thresholds.get(label, self.default_threshold)
                         self.active_matchers[key] = StreamingSDTW(
-                            tmpl, self.weights, self.threshold, self.promising_ratio
+                            tmpl, self.weights, thresh, self.promising_ratio
                         )
                     
         # Freeze matchers no longer in candidate set (unless promising)

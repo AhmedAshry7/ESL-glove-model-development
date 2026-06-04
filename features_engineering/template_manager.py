@@ -18,8 +18,16 @@ class TemplateManager:
         like normalization_stats.npz and discriminative_weights.npz.
         """
         self.templates = {}
+        self.thresholds = {}
         if not os.path.exists(self.template_dir):
             return
+            
+        # Load thresholds if available
+        import json
+        thresh_path = os.path.join(self.template_dir, 'class_thresholds.json')
+        if os.path.exists(thresh_path):
+            with open(thresh_path, 'r') as f:
+                self.thresholds = json.load(f)
             
         for filename in sorted(os.listdir(self.template_dir)):
             if not filename.endswith('.npz'):
@@ -40,3 +48,6 @@ class TemplateManager:
             
     def get_templates(self) -> dict:
         return self.templates
+        
+    def get_thresholds(self) -> dict:
+        return self.thresholds

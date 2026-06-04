@@ -83,8 +83,8 @@ def convert_to_csv_and_stratify(raw_dir, out_dir):
         total = len(sids)
         
         # 70% train, 15% val, 15% test
-        train_end = int(total * 0.7)
-        val_end = train_end + int(total * 0.15)
+        train_end = int(total * 0.6)
+        val_end = train_end + int(total * 0.20)
         
         train_sids.update(sids[:train_end])
         val_sids.update(sids[train_end:val_end])

@@ -37,6 +37,12 @@ def build_template_db(train_csv_path: str, out_dir: str, num_templates_per_sign=
     """
     os.makedirs(out_dir, exist_ok=True)
 
+    # ── Clean stale templates from previous runs ────────────────────────────
+    for f in os.listdir(out_dir):
+        if f.endswith('.npz'):
+            os.remove(os.path.join(out_dir, f))
+    print("Cleaned stale templates from previous runs.")
+
     # ── Pass 1: compute & save normalization stats ──────────────────────────
     print("Pass 1: collecting frames to compute normalization statistics…")
     all_raw_frames = _collect_all_raw_frames(train_csv_path)
@@ -102,8 +108,51 @@ def build_template_db(train_csv_path: str, out_dir: str, num_templates_per_sign=
         if label not in extracted:
             extracted[label] = []
         
-        if len(extracted[label]) < num_templates_per_sign:
-            extracted[label].append(v_trimmed)
+        extracted[label].append(v_trimmed)
+        
+    print("    Selecting medoid templates (most representative)...")
+    from recognition.sdtw_engine import compute_static_dtw
+    
+    # Perform Medoid Selection and Dynamic Thresholding
+    final_extracted = {}
+    class_thresholds = {}
+    for label, tmpls in extracted.items():
+        if len(tmpls) <= num_templates_per_sign:
+            final_extracted[label] = tmpls
+            class_thresholds[label] = cfg.SDTW_DETECTION_THRESHOLD # fallback
+        else:
+            # Compute pairwise distance matrix
+            n = len(tmpls)
+            dist_mat = np.zeros((n, n))
+            for i in range(n):
+                for j in range(i+1, n):
+                    d = compute_static_dtw(tmpls[i], tmpls[j], cfg.CHANNEL_WEIGHTS)
+                    dist_mat[i, j] = d
+                    dist_mat[j, i] = d
+            
+            # Find the 3 indices with the lowest sum of distances to all others
+            sum_dists = np.sum(dist_mat, axis=1)
+            best_indices = np.argsort(sum_dists)[:num_templates_per_sign]
+            final_extracted[label] = [tmpls[i] for i in best_indices]
+            
+            # Compute dynamic threshold: max distance from any chosen template to any other sequence of the same class
+            max_intra_dist = 0
+            for best_idx in best_indices:
+                for i in range(n):
+                    if dist_mat[best_idx, i] > max_intra_dist:
+                        max_intra_dist = dist_mat[best_idx, i]
+            
+            # Add a 20% margin to the maximum observed training distance, bounded between [0.2, 0.95]
+            dyn_thresh = min(0.95, max(0.2, max_intra_dist * 1.20))
+            class_thresholds[label] = dyn_thresh
+            
+    extracted = final_extracted
+    
+    # Save the dynamic thresholds
+    import json
+    with open(os.path.join(out_dir, "class_thresholds.json"), 'w') as f:
+        json.dump(class_thresholds, f, indent=2)
+    print("    Saved dynamic per-class thresholds.")
                     
     for label, tmpls in extracted.items():
         save_dict = {f"tmpl_{i}": tmpl for i, tmpl in enumerate(tmpls)}
