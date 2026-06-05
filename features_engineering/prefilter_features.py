@@ -19,6 +19,17 @@ def load_norm_stats(model_dir: str) -> dict:
     return {'mean': data['mean'], 'std': data['std']}
 
 
+from scipy.interpolate import interp1d
+
+def _interpolate_sequence(seq, target_len=50):
+    T, F = seq.shape
+    if T == target_len:
+        return seq
+    old_indices = np.linspace(0, 1, T)
+    new_indices = np.linspace(0, 1, target_len)
+    interpolator = interp1d(old_indices, seq, axis=0, kind='linear', fill_value="extrapolate")
+    return interpolator(new_indices)
+
 def extract_prefilter_dataset(train_csv_path: str, disabled_groups: list = [], norm_stats: dict = None):
 
     X = []
@@ -36,25 +47,22 @@ def extract_prefilter_dataset(train_csv_path: str, disabled_groups: list = [], n
         raw_frames = frames_data[:, 1:]
 
         t, v = preprocess_stream(timestamps, raw_frames, disabled_groups, norm_stats=norm_stats)
-        if len(v) == 0:
+        if len(v) < 5:
             continue
+            
+        # Instead of pushing arbitrarily and sub-sampling, interpolate to exactly ROLLING_WINDOW_SIZE
+        normalized_v = _interpolate_sequence(v, target_len=ROLLING_WINDOW_SIZE)
 
-        end_index = len(v) - 1
-        sample_points = np.linspace(min(5, end_index), end_index, 5, dtype=int)
         buffer = RollingStatsBuffer(window_size=ROLLING_WINDOW_SIZE, n_features=N_FEATURES_PER_FRAME)
-        for point in sample_points:
-            window_start = max(0, point - ROLLING_WINDOW_SIZE + 1)
-            for i in range(window_start, point + 1):
-                buffer.push(v[i])
+        
+        # Push the perfectly normalized sequence into the buffer
+        for frame in normalized_v:
+            buffer.push(frame)
 
-            # Checking if buffer passes the min fill
-            if buffer.fill_ratio < PREFILTER_MIN_FILL_RATIO:
-                continue
-
-            features = buffer.calc_features()
-            if features is not None:
-                X.append(features)
-                Y.append(label)
+        features = buffer.calc_features()
+        if features is not None:
+            X.append(features)
+            Y.append(label)
 
     return np.array(X), np.array(Y)
 
