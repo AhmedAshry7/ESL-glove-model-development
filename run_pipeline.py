@@ -41,34 +41,30 @@ def run_step(step_num, total_steps, name, script_path, extra_args=None):
 def main():
     print(f"\n{BOLD}{CYAN}")
     print("╔════════════════════════════════════════════════════════════════════╗")
-    print("║            ESL GLOVE — MASTER TRAINING PIPELINE                  ║")
+    print("║       ESL GLOVE — WINDOWED-RF TRAINING PIPELINE v5              ║")
     print("╚════════════════════════════════════════════════════════════════════╝")
     print(f"{RESET}")
     
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    test_script = os.path.join(base_dir, "tests", "test_csv_pipeline.py")
+    test_script = os.path.join(base_dir, "tests", "test_windowed_pipeline.py")
     
-    total_steps = 5
+    total_steps = 4
     total_start = time.time()
     
     # Step 1: Data Aggregation
     run_step(1, total_steps, "Data Aggregation & Stratification",
              os.path.join(base_dir, "data", "csv_converter.py"))
     
-    # Step 2: Template Extraction
-    run_step(2, total_steps, "Template Extraction & Normalization",
-             os.path.join(base_dir, "train_models", "build_template_db.py"))
+    # Step 2: Train Windowed RF Classifier
+    run_step(2, total_steps, "Train Windowed RF Classifier (Feature Pipeline + RF)",
+             os.path.join(base_dir, "train_models", "train_windowed_rf.py"))
     
-    # Step 3: Train Pre-Filter
-    run_step(3, total_steps, "Train Random Forest Pre-Filter",
-             os.path.join(base_dir, "train_models", "train_prefilter.py"))
-    
-    # Step 4: Validation Set Evaluation
-    run_step(4, total_steps, "Validation Set Evaluation",
+    # Step 3: Validation Set Evaluation
+    run_step(3, total_steps, "Validation Set Evaluation",
              test_script, extra_args=["val"])
     
-    # Step 5: Test Set Evaluation (Final, Unseen)
-    run_step(5, total_steps, "Test Set Evaluation (Final, Unseen)",
+    # Step 4: Test Set Evaluation (Final, Unseen)
+    run_step(4, total_steps, "Test Set Evaluation (Final, Unseen)",
              test_script, extra_args=["test"])
     
     total_duration = time.time() - total_start
@@ -78,9 +74,9 @@ def main():
     print(f"  🎉 FULL PIPELINE COMPLETED IN {total_duration:.1f}s")
     print("★" * 70)
     print(f"{RESET}")
-    print(f"  {DIM}Models saved to:    ./models/{RESET}")
-    print(f"  {DIM}Templates saved to: ./models/templates/{RESET}")
-    print(f"  {DIM}To re-evaluate:     python tests/test_csv_pipeline.py [val|test]{RESET}")
+    print(f"  {DIM}Model saved to:  ./models/windowed_rf.joblib{RESET}")
+    print(f"  {DIM}To re-evaluate:  python tests/test_windowed_pipeline.py [val|test]{RESET}")
+    print(f"  {DIM}Inference test:  python tests/inference_test_windowed.py <json_name>{RESET}")
     print()
 
 if __name__ == "__main__":

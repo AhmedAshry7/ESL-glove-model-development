@@ -19,7 +19,7 @@ def apply_feature_mask(frames: np.ndarray, disabled_groups: list) -> np.ndarray:
         elif group in FEATURE_GROUPS:
             masked[..., FEATURE_GROUPS[group]] = 0.0
         else:
-            raise ValueError(f"Unknown feature group: {group}")
+            print(f"Unknown feature group: {group}")
     return masked
 
 def normalize_quaternion_sign(quats: np.ndarray) -> np.ndarray:

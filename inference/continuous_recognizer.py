@@ -73,11 +73,23 @@ class ContinuousRecognizer:
         self.current_candidates = []
         self.current_probabilitys = []
         self.frame_history = {}
+        self.session_offset = None   # Set via set_session_offset() for baseline correction
 
     def _reset_state(self):
-        self.activity_monitor.prev_frame = None
-        self.activity_monitor.idle_counter = 0
-        self.activity_monitor.is_active = False
+        # Rebuild the ActivityMonitor to cleanly reset all EMA / ring-buffer state
+        active_channels = np.where(cfg.CHANNEL_WEIGHTS > 0)[0]
+        finger_indices = list(range(0, 16)) + list(range(28, 44))
+        imu_indices    = list(range(16, 28)) + list(range(44, 56))
+        active_finger_channels = [i for i in active_channels if i in finger_indices]
+        active_imu_channels    = [i for i in active_channels if i in imu_indices]
+
+        self.activity_monitor = ActivityMonitor(
+            finger_thresh=cfg.FINGER_IDLE_THRESHOLD_NORM,
+            arm_thresh=cfg.ARM_IDLE_THRESHOLD,
+            idle_frames_req=cfg.IDLE_FRAMES_REQUIRED,
+            active_finger_channels=active_finger_channels,
+            active_imu_channels=active_imu_channels
+        )
         self.rolling_stats.idx = 0
         self.rolling_stats.full = False
         self.sdtw_engine.reset_all()
@@ -90,9 +102,18 @@ class ContinuousRecognizer:
         self.current_candidates = []
         self.current_probabilitys = []
         self.frame_history = {}
+        self.session_offset = None
+
+    def set_session_offset(self, offset: np.ndarray):
+        """Set a per-session baseline correction vector for finger channels.
+        This is subtracted from each raw frame BEFORE z-score normalization."""
+        self.session_offset = offset
 
     def feed_frame(self, frame: np.ndarray) -> list:
         self.frame_count += 1
+
+        if self.session_offset is not None:
+            frame = frame - self.session_offset
 
         if self.norm_stats is not None:
             frame = normalize_frames(frame.reshape(1, -1), self.norm_stats)[0]
@@ -103,55 +124,47 @@ class ContinuousRecognizer:
 
         is_active = self.activity_monitor.feed(frame)
         window_frames = int(cfg.NMS_WINDOW_SECONDS * cfg.TARGET_SAMPLE_HZ)
-                
-        if not is_active:
-            if self.was_active:
-                # Transition ACTIVE → IDLE: Force emit any detections stuck in a valley
-                forced_detections = self.sdtw_engine.force_emit_all(self.frame_count)
-                # Gate before NMS to avoid triggering cooldown for weak false positives
-                forced_detections = [d for d in forced_detections if (1.0 - d['distance']) >= cfg.CONFIDENCE_THRESHOLD]
 
-                emissions = self.nms.process_detections(
-                    forced_detections, self.frame_count, window_frames, 
-                    self.frame_history, self.discriminative_weights, self.templates, force_flush=True
-                )
-            else:
-                emissions = self.nms.process_detections(
-                    [], self.frame_count, window_frames, 
-                    self.frame_history, self.discriminative_weights, self.templates, force_flush=True
-                )
-                
-            self.was_active = False
-            final_emissions = [e for e in emissions if (1.0 - e['distance']) >= cfg.CONFIDENCE_THRESHOLD]
-            return final_emissions
-
-        self.was_active = True
-
+        # ── Always feed the rolling stats and SDTW engine ──
+        # The SDTW valley detection is the primary segmentation mechanism.
+        # We do NOT skip SDTW feeding when idle — brief pauses between
+        # signs should not interrupt the ongoing DTW computation.
         self.rolling_stats.push(frame)
 
-        #pre-filter to run after the buffer is filled
-        if self.frame_count % cfg.PREFILTER_INTERVAL == 0:
-            # Gate: don't classify until enough history is accumulated
-            if self.rolling_stats.fill_ratio >= cfg.PREFILTER_MIN_FILL_RATIO:
-                features = self.rolling_stats.calc_features()
-                if features is not None:
-                    probability = self.prefilter.predict_proba(features.reshape(1, -1))[0]
-                    top_k = cfg.get_top_k(self.n_classes)
-                    top_indices = np.argsort(probability)[-top_k:][::-1]
-                    top_candidates = [self.prefilter.classes_[i] for i in top_indices]
+        # Pre-filter: only run when active (avoids noisy candidates during idle)
+        if is_active:
+            if self.frame_count % cfg.PREFILTER_INTERVAL == 0:
+                if self.rolling_stats.fill_ratio >= cfg.PREFILTER_MIN_FILL_RATIO:
+                    features = self.rolling_stats.calc_features()
+                    if features is not None:
+                        probability = self.prefilter.predict_proba(features.reshape(1, -1))[0]
+                        top_k = cfg.get_top_k(self.n_classes)
+                        top_indices = np.argsort(probability)[-top_k:][::-1]
+                        top_candidates = [self.prefilter.classes_[i] for i in top_indices]
 
-                    self.current_candidates = top_candidates
-                    self.current_probabilitys = [probability[i] for i in top_indices]
-                    self.sdtw_engine.update_candidates(top_candidates)
+                        self.current_candidates = top_candidates
+                        self.current_probabilitys = [probability[i] for i in top_indices]
+                        self.sdtw_engine.update_candidates(top_candidates)
 
+        # Always feed SDTW
         new_detections = self.sdtw_engine.feed(frame, self.frame_count)
         # Gate before NMS to avoid triggering cooldown for weak false positives
         new_detections = [d for d in new_detections if (1.0 - d['distance']) >= cfg.CONFIDENCE_THRESHOLD]
 
+        # ── ACTIVE → IDLE transition: force-flush stuck valleys ──
+        force_flush = False
+        if not is_active and self.was_active:
+            forced_detections = self.sdtw_engine.force_emit_all(self.frame_count)
+            forced_detections = [d for d in forced_detections if (1.0 - d['distance']) >= cfg.CONFIDENCE_THRESHOLD]
+            new_detections.extend(forced_detections)
+            force_flush = True
+
+        self.was_active = is_active
 
         emissions = self.nms.process_detections(
             new_detections, self.frame_count, window_frames,
-            self.frame_history, self.discriminative_weights, self.templates
+            self.frame_history, self.discriminative_weights, self.templates,
+            force_flush=force_flush
         )
 
         final_emissions = [
@@ -160,3 +173,4 @@ class ContinuousRecognizer:
         ]
 
         return final_emissions
+

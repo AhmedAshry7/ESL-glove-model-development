@@ -54,14 +54,14 @@ TARGET_SAMPLE_HZ = 50.0
 # fed without normalization (e.g. the activity check in the old simulate_inference
 # path). The recognizer feeds normalized frames, so it uses FINGER_IDLE_THRESHOLD_NORM.
 FINGER_IDLE_THRESHOLD = 0.02
-ARM_IDLE_THRESHOLD = 0.01
-IDLE_FRAMES_REQUIRED = 15    # 15 frames @ 50Hz = 300ms
+ARM_IDLE_THRESHOLD = 0.06
+IDLE_FRAMES_REQUIRED = 8     # 8 frames @ 50Hz = 160ms (short enough to catch brief pauses)
 
 # Normalized-scale threshold — after z-score normalization the finger channels
-# are in units of standard deviations. A frame-to-frame change of 0.05 sigma
-# across active channels is a reasonable "still" boundary.
-# Empirically measured: signing sequences have finger_vel ~0.06 at mid-sign.
-FINGER_IDLE_THRESHOLD_NORM = 0.05
+# are in units of standard deviations. The ActivityMonitor now uses np.mean()
+# (per-channel average) instead of np.sum(), so this threshold is per-channel.
+# Empirically measured: idle finger channels average ~0.001, signing ~0.01+.
+FINGER_IDLE_THRESHOLD_NORM = 0.003
 
 # ── Pre-Filter (Random Forest) ──
 ROLLING_WINDOW_SIZE = 50       # 50 frames @ 50Hz = 1.0 second
@@ -111,7 +111,7 @@ if np.sum(CHANNEL_WEIGHTS) > 0:
 
 # ── Non-Maximum Suppression (NMS) ──
 NMS_OVERLAP_THRESHOLD = 0.5       # Discard detection if IoU overlap > 0.5
-NMS_COOLDOWN_FRAMES = 25          # 25 frames @ 50Hz = 0.5s cooldown between emissions
+NMS_COOLDOWN_FRAMES = 10          # 10 frames @ 50Hz = 0.2s cooldown between emissions
 NMS_WINDOW_SECONDS = 3.0          # How far back to look for overlapping detections
 
 # ── Post-Processing ──
