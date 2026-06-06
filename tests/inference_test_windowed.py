@@ -36,7 +36,7 @@ def test_continuous_files(json_files: list, model_dir: str):
             for l in labels:
                 class_total[l] = class_total.get(l, 0) + 1
 
-            t, values = preprocess_stream(raw_frames[:, 0], raw_frames[:, 1:], disabled_groups=cfg.DISABLED_FEATURE_GROUPS)
+            total, values = preprocess_stream(raw_frames[:, 0], raw_frames[:, 1:], disabled_groups=cfg.DISABLED_FEATURE_GROUPS)
 
             detections = recognizer.recognize(values, dt=1.0 / cfg.TARGET_SAMPLE_HZ)
             pred_labels = [d["label"] for d in detections]
@@ -67,7 +67,7 @@ def test_continuous_files(json_files: list, model_dir: str):
     for label in sorted(class_total.keys()):
         correct = class_correct.get(label, 0)
         total = class_total[label]
-        percentage = correct / total * 100 if t else 0
+        percentage = correct / total * 100 if total else 0
         print(f"  {label:<20} {correct:>5}/{total:<5} {percentage:>6.0f}%")
 
     if confusion:

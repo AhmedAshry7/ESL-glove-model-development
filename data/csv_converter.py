@@ -26,7 +26,8 @@ def convert_csv_split(raw_dir, processed_dir):
         if filename.endswith('.json') and not filename.endswith('_meta.json'):
             filepath = os.path.join(raw_dir, filename)
             try:
-                with open(filepath, 'r') as f:
+                # FIXED: Changed 'file_path' to 'filepath' to match the variable above
+                with open(filepath, 'r', encoding='utf-8') as f:
                     data = json.load(f)
             except json.JSONDecodeError:
                 continue
@@ -90,17 +91,17 @@ def convert_csv_split(raw_dir, processed_dir):
     columns = ['sample_id', 'label', 'frame_index', 'timestamp'] + feature_names
     
     print("Saving CSV files...")
-    for file_path, dataset_rows in [(train_file, train_rows), (val_file, val_rows), (test_file, test_rows)]:
-        with open(file_path, 'w', newline='') as f:
+    for out_file_path, dataset_rows in [(train_file, train_rows), (val_file, val_rows), (test_file, test_rows)]:
+        # Added encoding='utf-8' here as well to safely write non-ASCII labels
+        with open(out_file_path, 'w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
             writer.writerow(columns)
             writer.writerows(dataset_rows)
     
-    print(f"Success! Data saved:")
+    print(f"Success! Data saved to {processed_dir}")
     
 if __name__ == "__main__":
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     raw_dir = os.path.join(base_dir, "data", "raw")
     processed_dir = os.path.join(base_dir, "data", "processed_csv")
     convert_csv_split(raw_dir, processed_dir)
-

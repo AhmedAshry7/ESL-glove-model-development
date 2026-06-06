@@ -11,7 +11,7 @@ def load_sequences(csv_path: str) -> list:
     sequences = defaultdict(list)
     labels = {}
     
-    with open(csv_path, 'r') as f:
+    with open(csv_path, 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
         header = next(reader)
         for row in reader:
