@@ -1,10 +1,3 @@
-"""
-test_windowed_pipeline.py
-
-Evaluate the windowed-RF pipeline on per-sign CSV test/val data.
-Each sign is a single recording — we extract features and classify directly.
-"""
-
 import sys, os
 import numpy as np
 
@@ -32,54 +25,47 @@ def test_pipeline(csv_file: str, model_dir: str, split_name: str = "test"):
     confusion = []
 
     for idx, sign in enumerate(sequences):
-        gt = sign["label"]
+        label = sign["label"]
         raw = sign["frames"]
-        class_total[gt] = class_total.get(gt, 0) + 1
+        class_total[label] = class_total.get(label, 0) + 1
 
         t, values = preprocess_stream(raw[:, 0], raw[:, 1:], disabled_groups=cfg.DISABLED_FEATURE_GROUPS)
         feature_values = extract_features(values, dt=1.0 / cfg.TARGET_SAMPLE_HZ)
 
         if feature_values is None:
-            confusion.append((gt, "TOO_SHORT"))
-            print(f"  [{idx+1:>3}/{total}] GT: {gt:<20} → PRED: TOO SHORT ❌")
+            confusion.append((label, "TOO_SHORT"))
+            print(f"Label: {label:<20} → Predicted: TOO SHORT ❌")
             continue
 
-        proba = clf.predict_proba(feature_values.reshape(1, -1))[0]
-        pred = clf.classes_[np.argmax(proba)]
-        conf = np.max(proba)
+        probability = clf.predict_proba(feature_values.reshape(1, -1))[0]
+        prediction = clf.classes_[np.argmax(probability)]
+        confidence = np.max(probability)
 
-        if pred == gt:
+        if prediction == label:
             correct += 1
-            class_correct[gt] = class_correct.get(gt, 0) + 1
-            status = "✅"
+            class_correct[label] = class_correct.get(label, 0) + 1
         else:
-            status = "❌"
-            confusion.append((gt, pred))
+            confusion.append((label, prediction))
 
-        print(f"  [{idx+1:>3}/{total}] GT: {gt:<20} → PRED: {pred:<20} ({conf:.2f}) {status}")
+        print(f"Label: {label:<20} → Predicted: {prediction:<20} ({confidence:.2f})")
 
     acc = correct / total * 100 if total else 0.0
 
-    print(f"\n{'─'*60}")
-    print(f" {split_name.upper()} SET SUMMARY")
-    print(f"{'─'*60}")
-    print(f"  Overall Accuracy: {acc:.1f}% ({correct}/{total})")
+
+    print(f"Overall Accuracy: {acc:.1f}% ({correct}/{total})\n")
     print(f"\n  {'Class':<20} {'Correct':>8} {'Total':>6} {'Accuracy':>9}")
-    print(f"  {'─'*47}")
     for label in sorted(class_total.keys()):
-        c = class_correct.get(label, 0)
-        t = class_total[label]
-        pct = c / t * 100 if t else 0
-        bar = "█" * int(pct / 10) + "░" * (10 - int(pct / 10))
-        print(f"  {label:<20} {c:>5}/{t:<5} {pct:>6.0f}%  {bar}")
+        correct= class_correct.get(label, 0)
+        total = class_total[label]
+        percentage = correct / total * 100 if total else 0
+        print(f"{label:<20} {correct:>5}/{total:<5} {percentage:>6.0f}%")
 
     if confusion:
         print(f"\n  Most Common Errors:")
         from collections import Counter
-        for (gt, pred), cnt in Counter(confusion).most_common(10):
-            print(f"    {gt} → {pred}  ({cnt}x)")
+        for (label, prediction), count in Counter(confusion).most_common(10):
+            print(f"{label}  {prediction}  {count}")
 
-    print(f"{'─'*60}\n")
     return acc
 
 

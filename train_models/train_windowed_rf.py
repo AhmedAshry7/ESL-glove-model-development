@@ -40,7 +40,7 @@ def augment_sign(values: np.ndarray, rng: np.random.Generator, n_augments: int =
 
 def build_dataset(csv_path: str, augment: bool = True):
     sequences = load_sequences(csv_path)
-    print(f"  Loaded {len(sequences)} sequences from {os.path.basename(csv_path)}")
+    print(f"Loaded {len(sequences)} sequences from {os.path.basename(csv_path)}")
 
     rng = np.random.default_rng(42)
     X_list, y_list = [], []
@@ -67,11 +67,11 @@ def build_dataset(csv_path: str, augment: bool = True):
                     y_list.append(label if augmented_type == "positive" else "background")
 
     if skipped:
-        print(f"  Skipped {skipped} too-short sequences")
+        print(f"Skipped {skipped} too-short sequences")
 
     X = np.vstack(X_list)
     y = np.array(y_list)
-    print(f"  Feature matrix: {X.shape}  ({len(set(y))} classes, {len(y)} samples)")
+    print(f"Feature matrix: {X.shape}  ({len(set(y))} classes, {len(y)} samples)")
     return X, y
 
 

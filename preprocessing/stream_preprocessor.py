@@ -23,31 +23,26 @@ def apply_feature_mask(frames: np.ndarray, disabled_groups: list) -> np.ndarray:
     return masked
 
 def normalize_quaternion_sign(quats: np.ndarray) -> np.ndarray:
-    """
-    Enforce qw >= 0 convention to remove double-cover ambiguity.
-    quats shape: (N, 4) where order is [qw, qx, qy, qz]
-    """
-    out = quats.copy()
-    neg_w_idx = out[:, 0] < 0
-    out[neg_w_idx] *= -1.0
-    return out
+
+    processed = quats.copy()
+    neg_w_idx = processed[:, 0] < 0
+    processed[neg_w_idx] *= -1.0
+    return processed
 
 def normalize_frames(frames: np.ndarray, norm_stats: dict) -> np.ndarray:
     was_1d = frames.ndim == 1
-    out = np.atleast_2d(frames).copy().astype(float)
+    processed = np.atleast_2d(frames).copy().astype(float)
 
-    mean = norm_stats['mean']   # (56,)
-    std  = norm_stats['std']    # (56,)
-
-    # Identify dead channels (std ~= 1e-6 means clamped due to zero variance)
+    mean = norm_stats['mean'] 
+    std  = norm_stats['std']   
     #Recheck the std should be that of the sensor data per sign not of all frames across all signs
-    dead_mask = std < 0.01   # finger channels with no real variation
+    dead_mask = std < 0.01   
 
-    out = (out - mean) / np.where(dead_mask, 1.0, std)
+    processed = (processed - mean) / np.where(dead_mask, 1.0, std)
 
-    out[:, dead_mask] = 0.0
+    processed[:, dead_mask] = 0.0
 
-    return out[0] if was_1d else out
+    return processed[0] if was_1d else processed
 
 def compute_normalization_stats(all_frames_list: list) -> dict:
     if not all_frames_list:
@@ -63,12 +58,10 @@ def compute_normalization_stats(all_frames_list: list) -> dict:
 
     mean[finger_indices] = np.mean(combined[:, finger_indices], axis=0)
     pre_std = np.std(combined[:, finger_indices], axis=0)
-    # Use real std only where variation exists; dead channels get std=1.0
-    # (normalize_frames will then zero them out via the dead_mask logic)
-    #Recheck should leave std as it is and leave normalize frames to zero them out
+
+    #Recheck should leave std as it is and leave normalize frames to zero them processed
     std[finger_indices] = np.where(pre_std > 1.0, pre_std, 1.0)
 
-    # IMU channels: pass-through
     mean[imu_indices] = 0.0
     std[imu_indices]  = 1.0
 
@@ -123,7 +116,6 @@ def resample_to_uniform(timestamps: np.ndarray, values: np.ndarray, target_hz: f
         interp_wxyz = np.column_stack((interp_xyzw[:, 3], interp_xyzw[:, :3]))
         uniform_v[:, q_start:q_start+4] = interp_wxyz
         
-    # Enforce qw >= 0
     for q_start in imu_starts:
         if not np.all(uniform_v[:, q_start:q_start+4] == 0.0):
             uniform_v[:, q_start:q_start+4] = normalize_quaternion_sign(

@@ -19,7 +19,7 @@ def test_continuous_files(json_files: list, model_dir: str):
 
     for json_file in json_files:
         split_name = os.path.basename(json_file).replace(".json", "")
-        print(f"Evaluating: {split_name}")
+        print(f"Assessing: {split_name}")
 
         with open(json_file, "r", encoding="utf-8") as f:
             loaded = json.load(f)
@@ -31,7 +31,7 @@ def test_continuous_files(json_files: list, model_dir: str):
             label = sign["label"]
             raw_frames = np.array(sign["frames"])
 
-            labels = [lbl.strip() for lbl in label.replace(",", "-").split("-") if lbl.strip() and lbl.strip() != "nosign"]
+            labels = [l.strip() for l in label.replace(",", "-").split("-") if l.strip() and l.strip() != "nosign"]
 
             for l in labels:
                 class_total[l] = class_total.get(l, 0) + 1
@@ -43,9 +43,7 @@ def test_continuous_files(json_files: list, model_dir: str):
             
             if pred_labels == labels:
                 correct += 1
-                status = "✅"
             else:
-                status = "❌"
                 confusion.append((str(labels), str(pred_labels)))
 
             label_count = Counter(labels)
@@ -53,40 +51,30 @@ def test_continuous_files(json_files: list, model_dir: str):
             for l, c in (label_count & prediction_count).items():
                 class_correct[l] = class_correct.get(l, 0) + c
 
-            gt_disp = ", ".join(labels)
-            pr_disp = ", ".join(pred_labels) if pred_labels else "NO DETECTION"
-            det_info = "  ".join(
-                f"[{d['label']} {d['confidence']:.2f} f{d['start']}-{d['end']}]"
-                for d in detections
-            ) if detections else ""
-
-            print(f"  GT:   [{gt_disp}]")
-            print(f"  PRED: [{pr_disp}] {status}")
+            labels_d = ", ".join(labels)
+            predictions_d = ", ".join(pred_labels) if pred_labels else "NO DETECTION"
+            det_info = "  ".join(f"[{d['label']} {d['confidence']:.2f} f{d['start']}-{d['end']}]" for d in detections) if detections else ""
+            print(f"Label:   [{labels_d}]")
+            print(f"Prediction: [{predictions_d}]")
             if det_info:
-                print(f"  DETS: {det_info}")
+                print(f"DETS: {det_info}")
             print()
 
     seq_acc = correct / total_sequence * 100 if total_sequence else 0
 
-    print(f"\n{'─'*60}")
-    print(f" OVERALL INFERENCE SUMMARY")
-    print(f"{'─'*60}")
-    print(f"  Sequence Exact-Match Accuracy: {seq_acc:.1f}% ({correct}/{total_sequence})")
-    print(f"\n  {'Class':<20} {'Correct':>8} {'Total':>6} {'Accuracy':>9}")
-    print(f"  {'─'*47}")
+    print(f"Sequence Exact-Match Accuracy: {seq_acc:.1f}% ({correct}/{total_sequence})\n")
+    print(f"{'Class':<20} {'Correct':>8} {'Total':>6} {'Accuracy':>9}")
     for label in sorted(class_total.keys()):
-        c = class_correct.get(label, 0)
-        t = class_total[label]
-        pct = c / t * 100 if t else 0
-        bar = "█" * int(pct / 10) + "░" * (10 - int(pct / 10))
-        print(f"  {label:<20} {c:>5}/{t:<5} {pct:>6.0f}%  {bar}")
+        correct = class_correct.get(label, 0)
+        total = class_total[label]
+        percentage = correct / total * 100 if t else 0
+        print(f"  {label:<20} {correct:>5}/{total:<5} {percentage:>6.0f}%")
 
     if confusion:
         print(f"\n  Most Common Mismatches:")
-        for (gt_s, pr_s), cnt in Counter(confusion).most_common(10):
-            print(f"    GT: {gt_s} → PRED: {pr_s}  ({cnt}x)")
+        for (labels, predictions), count in Counter(confusion).most_common(10):
+            print(f"label: {labels} prediction: {predictions}  ({count}x)")
 
-    print(f"{'─'*60}\n")
     return seq_acc
 
 
