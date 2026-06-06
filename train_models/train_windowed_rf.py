@@ -33,7 +33,7 @@ def augment_sign(values: np.ndarray, rng: np.random.Generator, n_augments: int =
     for i in range(3):
         ratio = rng.uniform(0.20, 0.50)
         window = max(5, int(length * ratio))
-        max_start = length- window
+        max_start = length - window
         start = rng.integers(0, max_start + 1) if max_start > 0 else 0
         yield values[start:start+window], "background"
 
