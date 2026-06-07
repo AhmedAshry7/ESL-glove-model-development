@@ -1,21 +1,23 @@
 import os, sys, json
 import numpy as np
-import joblib
+import onnxruntime as ort
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from features_engineering.feature_pipeline import extract_features
 DEFAULT_WINDOW_SIZES = [60, 90, 130, 170, 210, 260, 310, 360]
 
 
-class SlidingWindowRecognizer:
+class SlidingWindowRecognizerONNX:
 
     def __init__(self, model_dir: str, window_sizes: list | None = None, stride: int = 9, confidence_threshold: float = 0.2):
 
-        random_forest_path = os.path.join(model_dir, "windowed_rf.joblib")
-        if not os.path.exists(random_forest_path):
-            raise FileNotFoundError(f"random forest model not found at {random_forest_path}")
-        self.clf = joblib.load(random_forest_path)
-        self.classes = list(self.clf.classes_)
+        onnx_path = os.path.join(model_dir, "windowed_rf.onnx")
+        if not os.path.exists(onnx_path):
+            raise FileNotFoundError(f"ONNX model not found at {onnx_path}")
+            
+        # Initialize ONNX CPU execution provider
+        self.session = ort.InferenceSession(onnx_path, providers=['CPUExecutionProvider'])
+        self.input_name = self.session.get_inputs()[0].name
         
         self.window_sizes = window_sizes or DEFAULT_WINDOW_SIZES
         self.stride = stride
@@ -39,28 +41,23 @@ class SlidingWindowRecognizer:
                     meta_batch.append((start, size))
 
         if feature_batch:
-            probabilities = self.clf.predict_proba(np.array(feature_batch))
+            # Run inference via ONNX
+            input_tensor = np.array(feature_batch).astype(np.float32)
+            ort_outs = self.session.run(None, {self.input_name: input_tensor})
             
-            best_window_idx = np.argmax(np.max(probabilities, axis=1))
-            best_probs = probabilities[best_window_idx]
-            prob_dict = {self.classes[j]: float(best_probs[j]) for j in range(len(self.classes))}
-            self.latest_probs = dict(sorted(prob_dict.items(), key=lambda item: item[1], reverse=True))
+            predicted_labels = ort_outs[0]
+            probabilities = ort_outs[1] 
             
-            for i, prob in enumerate(probabilities):
-                max_index = int(np.argmax(prob))
-                highest = float(prob[max_index])
+            for i in range(len(predicted_labels)):
+                label = predicted_labels[i]
+                highest = float(np.max(probabilities[i]))
+                
                 if highest >= self.conf_thresh:
-                    label = self.classes[max_index]
                     if label != "background":
                         start, size = meta_batch[i]
-                        
-                        prob_dict = {self.classes[j]: float(prob[j]) for j in range(len(self.classes))}
-                        sorted_probs = dict(sorted(prob_dict.items(), key=lambda item: item[1], reverse=True))
-
                         candidates.append({
-                            "label": label,
+                            "label": str(label),
                             "confidence": highest,
-                            "all_probs": sorted_probs,
                             "start": start,
                             "end": start + size - 1,
                             "window_size": size,
@@ -76,8 +73,7 @@ class SlidingWindowRecognizer:
     @staticmethod
     def nms(candidates: list, overlap_thresh: float = 0.1) -> list:
 
-        # Favor longer signs first, then fall back to confidence for ties
-        potentials = sorted(candidates, key=lambda c: (-c["window_size"], -c["confidence"]))
+        potentials = sorted(candidates, key=lambda c: -c["confidence"])
         accepted = []
 
         while potentials:

@@ -1,4 +1,4 @@
-`import asyncio
+import asyncio
 import websockets
 import struct
 import numpy as np
@@ -15,10 +15,15 @@ from rich.panel import Panel
 from rich.align import Align
 from rich.text import Text
 from rich.table import Table
+from rich.console import Group
 
-# Ensure the sliding_window_recognizer can be imported
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from sliding_window_recognizer import SlidingWindowRecognizer
+# Add project root to sys.path
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(root_dir)
+
+from inference.sliding_window_recognizer import SlidingWindowRecognizer
+import config.pipeline_config as cfg
+from preprocessing.stream_preprocessor import preprocess_stream
 
 # Hardcoded REST_POSES extracted from HumanCharacterDummy_M.glb
 REST_POSES = {
@@ -66,10 +71,25 @@ class GloveCalibrator:
         self.forearmRestR = to_R(REST_POSES["B-forearm.R"]["local"])
         self.handRestR = to_R(REST_POSES["B-hand.R"]["local"])
 
-        self.upperRestL = to_R(REST_POSES["B-upperArm.L"]["local"])
         self.upperRestWorldL = to_R(REST_POSES["B-upperArm.L"]["world"])
         self.forearmRestL = to_R(REST_POSES["B-forearm.L"]["local"])
         self.handRestL = to_R(REST_POSES["B-hand.L"]["local"])
+        
+        # Initialize identity mounts for pre-calibration output
+        identity = to_R([0.0, 0.0, 0.0, 1.0])
+        self.tareR = identity
+        self.upperMountCorrR = identity
+        self.forearmMountLR = identity
+        self.forearmMountRR = identity
+        self.handMountLR = identity
+        self.handMountRR = identity
+        
+        self.tareL = identity
+        self.upperMountCorrL = identity
+        self.forearmMountLL = identity
+        self.forearmMountRL = identity
+        self.handMountLL = identity
+        self.handMountRL = identity
 
     def calibrate(self, r_imu, l_imu):
         # Right Arm
@@ -77,13 +97,15 @@ class GloveCalibrator:
         hwFoR = to_R(ConvertToThreeSpace(r_imu['forearm'], 'right'))
         hwHaR = to_R(ConvertToThreeSpace(r_imu['hand'], 'right'))
 
-        deltaR = hwUpR * self.upperRestR.inv()
-        dqR = deltaR.as_quat()
-        tareQ_arrR = np.array([0, dqR[1], 0, dqR[3]])
-        if np.linalg.norm(tareQ_arrR) < 0.0001:
-            tareQ_arrR = np.array([0, 1, 0, 0])
-        tareQ_arrR = tareQ_arrR / np.linalg.norm(tareQ_arrR)
-        self.tareR = to_R(tareQ_arrR)
+        # deltaR = hwUpR * self.upperRestR.inv()
+        # dqR = deltaR.as_quat()
+        # tareQ_arrR = np.array([0, dqR[1], 0, dqR[3]])
+        # if np.linalg.norm(tareQ_arrR) < 0.0001:
+        #     tareQ_arrR = np.array([0, 1, 0, 0])
+        # tareQ_arrR = tareQ_arrR / np.linalg.norm(tareQ_arrR)
+        # self.tareR = to_R(tareQ_arrR)
+        eulerR = hwUpR.as_euler('YXZ',degrees = False)
+        self.tareR = R.from_euler('XYZ',[0,eulerR[0],0],degrees = False)
 
         self.upperMountCorrR = hwUpR.inv() * self.tareR * self.upperRestWorldR
         self.forearmMountLR = self.upperMountCorrR.inv()
@@ -96,14 +118,15 @@ class GloveCalibrator:
         hwFoL = to_R(ConvertToThreeSpace(l_imu['forearm'], 'left'))
         hwHaL = to_R(ConvertToThreeSpace(l_imu['hand'], 'left'))
 
-        deltaL = hwUpL * self.upperRestL.inv()
-        dqL = deltaL.as_quat()
-        tareQ_arrL = np.array([0, dqL[1], 0, dqL[3]])
-        if np.linalg.norm(tareQ_arrL) < 0.0001:
-            tareQ_arrL = np.array([0, 1, 0, 0])
-        tareQ_arrL = tareQ_arrL / np.linalg.norm(tareQ_arrL)
-        self.tareL = to_R(tareQ_arrL)
-
+        # deltaL = hwUpL * self.upperRestL.inv()
+        # dqL = deltaL.as_quat()
+        # tareQ_arrL = np.array([0, dqL[1], 0, dqL[3]])
+        # if np.linalg.norm(tareQ_arrL) < 0.0001:
+        #     tareQ_arrL = np.array([0, 1, 0, 0])
+        # tareQ_arrL = tareQ_arrL / np.linalg.norm(tareQ_arrL)
+        # self.tareL = to_R(tareQ_arrL)
+        eulerL = hwUpL.as_euler('YXZ',degrees = False)
+        self.tareL = R.from_euler('XYZ',[0,eulerL[0],0],degrees = False)
         self.upperMountCorrL = hwUpL.inv() * self.tareL * self.upperRestWorldL
         self.forearmMountLL = self.upperMountCorrL.inv()
         self.forearmMountRL = hwFoL.inv() * self.upperMountCorrL * self.forearmRestL
@@ -181,19 +204,29 @@ class AppUI:
         self.status = "Initializing..."
         self.calibrated = False
         self.calib_frames = 0
-        self.required_frames = 50
         self.prediction = "WAITING"
         self.confidence = 0.0
+        self.all_probs = {}
         self.error = None
         self.history = []
         self.trigger_recalibrate = False
+        self.debug_text = "Waiting for data stream..."
+        self.last_detection_frame = 0
+        self.is_inferring = False
+        self.current_sequence = []
+        self.last_emitted_times = {}
 
     def make_layout(self):
         layout = Layout()
         layout.split_column(
             Layout(name="header", size=3),
-            Layout(name="main"),
+            Layout(name="body"),
+            Layout(name="debug", size=13),
             Layout(name="footer", size=4)
+        )
+        layout["body"].split_row(
+            Layout(name="main", ratio=2),
+            Layout(name="history", ratio=1)
         )
         
         header_text = Text(f" ESL Glove Live Inference | Target: ws://{self.ip}:81 ", style="bold white on blue", justify="center")
@@ -202,6 +235,7 @@ class AppUI:
         # Main content
         if self.error:
             main_content = Align.center(Text(f"ERROR: {self.error}", style="bold red", justify="center"), vertical="middle")
+            self.error = None
         else:
             if self.prediction != "WAITING":
                 pred_color = "green" if self.confidence > 0.6 else "yellow"
@@ -209,16 +243,51 @@ class AppUI:
                 main_text.stylize(f"bold {pred_color}")
                 main_text.append(f"\nConfidence: {self.confidence:.2f}", style="cyan")
                 
-                # Make the prediction text large by using ASCII art or just bold large font, 
-                # but standard rich doesn't have "large font" without pyfiglet. We'll use bold and center.
-                main_content = Align.center(main_text, vertical="middle")
+                if self.all_probs:
+                    prob_table = Table.grid(expand=False, padding=(0, 2))
+                    prob_table.add_column(justify="right", style="cyan bold")
+                    prob_table.add_column(justify="left", style="white")
+                    
+                    for label, prob in list(self.all_probs.items())[:5]:
+                        prob_table.add_row(f"{prob*100:5.1f}%", label.upper())
+                        
+                    main_group = Group(
+                        Align.center(main_text),
+                        Text("\n[Live Probabilities]", style="dim", justify="center"),
+                        Align.center(prob_table)
+                    )
+                    main_content = Align.center(main_group, vertical="middle")
+                else:
+                    main_content = Align.center(main_text, vertical="middle")
             else:
-                main_content = Align.center(Text("Waiting for signs...", style="dim", justify="center"), vertical="middle")
+                main_group_items = [Align.center(Text("Waiting for signs...", style="dim", justify="center"))]
+                if self.all_probs:
+                    prob_table = Table.grid(expand=False, padding=(0, 2))
+                    prob_table.add_column(justify="right", style="cyan bold")
+                    prob_table.add_column(justify="left", style="white")
+                    
+                    for label, prob in list(self.all_probs.items())[:5]:
+                        prob_table.add_row(f"{prob*100:5.1f}%", label.upper())
+                            
+                    main_group_items.extend([
+                        Text("\n[Live Probabilities]", style="dim", justify="center"),
+                        Align.center(prob_table)
+                    ])
+                main_content = Align.center(Group(*main_group_items), vertical="middle")
         
         layout["main"].update(Panel(main_content, title="Live Prediction", border_style="green" if self.calibrated else "yellow"))
 
+        # History content
+        history_text = Text()
+        for h in reversed(self.history[-10:]):
+            history_text.append(f"• {h}\n", style="white")
+        layout["history"].update(Panel(history_text, title="History", border_style="blue"))
+        # Debug content
+        debug_panel = Panel(Text(self.debug_text, style="dim white"), title="Raw Hardware Debug (Live)", border_style="cyan")
+        layout["debug"].update(debug_panel)
+
         # Footer content
-        cal_status = f"[green]Calibrated[/green]" if self.calibrated else f"[yellow]Calibrating... ({self.calib_frames}/{self.required_frames})[/yellow]"
+        cal_status = f"[green]Calibrated[/green]" if self.calibrated else f"[yellow]Needs Calibration (Press 'C')[/yellow]"
         status_text = f"Status: {self.status} | Calibration: {cal_status}"
         cmds_text = "Commands: [bold cyan]C[/bold cyan] Force Recalibrate | [bold cyan]Q[/bold cyan] Quit"
         
@@ -245,6 +314,7 @@ async def glove_inference_client(ip="192.168.1.8"):
 
     calibrator = GloveCalibrator()
     frames_buffer = []
+    timestamps_buffer = []
     max_window_size = max(recognizer.window_sizes)
 
     # Keyboard Listener Thread
@@ -264,9 +334,11 @@ async def glove_inference_client(ip="192.168.1.8"):
         def update_ui():
             live.update(ui.make_layout())
 
+        frame_counter = 0
+
         while True:
             try:
-                async with websockets.connect(uri) as websocket:
+                async with websockets.connect(uri, ping_interval=None) as websocket:
                     ui.status = "[green]Connected[/green]"
                     update_ui()
                     
@@ -293,14 +365,29 @@ async def glove_inference_client(ip="192.168.1.8"):
                         if r_u_zero or np.isnan(right_imu['upperArm'][0]):
                             continue
 
-                        # Auto-calibrate
+                        frame_counter += 1
+                        
+                        if frame_counter % 5 == 0:
+                            def fmt_q(q): return f"[{q[0]:.2f}, {q[1]:.2f}, {q[2]:.2f}, {q[3]:.2f}]"
+                            ui.debug_text = (
+                                f"[R_IMU] U: {fmt_q(right_imu['upperArm'])} | F: {fmt_q(right_imu['forearm'])} | H: {fmt_q(right_imu['hand'])}\n"
+                                f"[L_IMU] U: {fmt_q(left_imu['upperArm'])} | F: {fmt_q(left_imu['forearm'])} | H: {fmt_q(left_imu['hand'])}\n"
+                                f"[R_FINGERS] {right_fingers}\n"
+                                f"[L_FINGERS] {left_fingers}"
+                            )
+                            if not ui.is_inferring:
+                                update_ui()
+
                         if not calibrator.is_calibrated:
                             ui.calib_frames += 1
-                            if ui.calib_frames >= ui.required_frames:
+                            if ui.calib_frames > 30:
                                 calibrator.calibrate(right_imu, left_imu)
                                 ui.calibrated = True
-                                ui.status = "[green]Running Inference[/green]"
-                            update_ui()
+                                ui.status = "[green]Calibrated[/green]"
+                                update_ui()
+                            else:
+                                ui.status = f"[yellow]Aligning... {ui.calib_frames}/30[/yellow]"
+                                update_ui()
                             continue
                             
                         # Process Frame
@@ -320,22 +407,80 @@ async def glove_inference_client(ip="192.168.1.8"):
                         flat56.extend(get_WXYZ(lPalm['upperArm']))
                         
                         frames_buffer.append(flat56)
+                        timestamps_buffer.append(frame_counter * 20000.0)  # Simulated timestamps at 50Hz (20ms)
                         
                         if len(frames_buffer) > max_window_size + 10:
                             frames_buffer.pop(0)
+                            timestamps_buffer.pop(0)
                             
                         if len(frames_buffer) >= max_window_size:
                             if len(frames_buffer) % 10 == 0:
-                                arr = np.array(frames_buffer)
-                                detections = recognizer.recognize(arr)
-                                if detections:
-                                    latest = detections[-1]
-                                    ui.prediction = latest['label'].upper()
-                                    ui.confidence = latest['confidence']
-                                    update_ui()
+                                if not ui.is_inferring:
+                                    ui.is_inferring = True
+                                    t_arr = np.array(timestamps_buffer)
+                                    v_arr = np.array(frames_buffer)
+                                    current_frame = frame_counter
+                                    
+                                    def run_inference_task(t, v):
+                                        _, preprocessed = preprocess_stream(t, v, disabled_groups=cfg.DISABLED_FEATURE_GROUPS)
+                                        dets = recognizer.recognize(preprocessed)
+                                        return dets, getattr(recognizer, 'latest_probs', {})
+                                        
+                                    async def process_inference():
+                                        try:
+                                            detections, live_probs = await asyncio.to_thread(run_inference_task, t_arr, v_arr)
+                                            
+                                            ui.all_probs = live_probs
+                                            
+                                            if detections:
+                                                for d in detections:
+                                                    absolute_end = current_frame - len(v_arr) + d['end']
+                                                    # Only process detections that finished recently
+                                                    if d['end'] >= len(v_arr) - 25:
+                                                        word = d['label'].upper()
+                                                        
+                                                        # Avoid adding the exact same detection consecutively
+                                                        is_duplicate = False
+                                                        if ui.current_sequence and ui.current_sequence[-1] == word:
+                                                            is_duplicate = True
+                                                        elif word in ui.last_emitted_times:
+                                                            if abs(absolute_end - ui.last_emitted_times[word]) < 50:
+                                                                is_duplicate = True
+                                                                
+                                                        if not is_duplicate:
+                                                            ui.last_emitted_times[word] = absolute_end
+                                                            
+                                                            # Clear sequence if too much time has passed
+                                                            if frame_counter - ui.last_detection_frame > 100:
+                                                                ui.current_sequence = []
+                                                                
+                                                            ui.current_sequence.append(word)
+                                                            ui.prediction = " ".join(ui.current_sequence)
+                                                            ui.confidence = d['confidence']
+                                                            ui.last_detection_frame = frame_counter
+                                                            
+                                                            if not ui.history or ui.history[-1] != word:
+                                                                ui.history.append(word)
+                                                                
+                                            update_ui()
+                                        except Exception as e:
+                                            ui.debug_text = f"Inference Error: {type(e).__name__} - {str(e)}"
+                                            update_ui()
+                                        finally:
+                                            ui.is_inferring = False
+                                            
+                                    asyncio.create_task(process_inference())
+                                        
+                        # Clear old predictions after 2 seconds (100 frames)
+                        if frame_counter - ui.last_detection_frame > 100 and ui.prediction != "WAITING":
+                            ui.prediction = "WAITING"
+                            ui.current_sequence = []
+                            ui.confidence = 0.0
+                            ui.all_probs = {}
+                            update_ui()
 
             except Exception as e:
-                ui.error = f"Connection Lost. Retrying..."
+                ui.error = f"Connection Lost. Retrying... (Error: {type(e).__name__} - {str(e)})"
                 ui.status = "[red]Disconnected[/red]"
                 update_ui()
                 await asyncio.sleep(2)

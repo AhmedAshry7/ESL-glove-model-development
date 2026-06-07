@@ -63,13 +63,21 @@ def delta_reference(frames: np.ndarray) -> np.ndarray:
             continue
         quantule /= n
         quantule_inverse = quat_conjugate(quantule)
-        for t in range(len(processed)):
-            qt = processed[t, quantules:quantules+4]
-            qn = np.linalg.norm(qt)
-            if qn < 1e-8:
-                continue
-            qt = qt / qn
-            processed[t, quantules:quantules+4] = quat_multiply(quantule_inverse, qt)
+        
+        qt = processed[:, quantules:quantules+4]
+        qn = np.linalg.norm(qt, axis=1, keepdims=True)
+        qn[qn < 1e-8] = 1.0
+        qt = qt / qn
+        
+        w1, x1, y1, z1 = quantule_inverse
+        w2, x2, y2, z2 = qt[:, 0], qt[:, 1], qt[:, 2], qt[:, 3]
+        
+        processed[:, quantules:quantules+4] = np.column_stack((
+            w1*w2 - x1*x2 - y1*y2 - z1*z2,
+            w1*x2 + x1*w2 + y1*z2 - z1*y2,
+            w1*y2 - x1*z2 + y1*w2 + z1*x2,
+            w1*z2 + x1*y2 - y1*x2 + z1*w2
+        ))
     return processed
 
 def compute_derivatives(values: np.ndarray, dt: float = 0.02):
@@ -85,13 +93,16 @@ def quaternions_to_vectors(frames: np.ndarray) -> np.ndarray:
     N = len(frames)
     processed = np.zeros((N, len(IMU_STARTS) * 6))
     for qi, qs in enumerate(IMU_STARTS):
-        for t in range(N):
-            rot = wxyz_to_xyzw(frames[t, qs:qs+4])
-            fwd = rot.apply([0, 0, 1])
-            up  = rot.apply([0, 1, 0])
-            c = qi * 6
-            processed[t, c:c+3] = fwd
-            processed[t, c+3:c+6] = up
+        q_wxyz = frames[:, qs:qs+4]
+        norms = np.linalg.norm(q_wxyz, axis=1, keepdims=True)
+        norms[norms < 1e-8] = 1.0
+        q_norm = q_wxyz / norms
+        
+        q_xyzw = np.column_stack((q_norm[:, 1], q_norm[:, 2], q_norm[:, 3], q_norm[:, 0]))
+        rot = Rotation.from_quat(q_xyzw)
+        
+        processed[:, qi*6 : qi*6+3] = rot.apply([0, 0, 1])
+        processed[:, qi*6+3 : qi*6+6] = rot.apply([0, 1, 0])
     return processed
 
 
@@ -100,9 +111,15 @@ def isolate_gravity(frames: np.ndarray) -> np.ndarray:
     processed = np.zeros((N, len(HAND_IMU_STARTS) * 3))
     world_g = np.array([0.0, -1.0, 0.0])
     for gi, qs in enumerate(HAND_IMU_STARTS):
-        for t in range(N):
-            rot = wxyz_to_xyzw(frames[t, qs:qs+4])
-            processed[t, gi*3:(gi+1)*3] = rot.inv().apply(world_g)
+        q_wxyz = frames[:, qs:qs+4]
+        norms = np.linalg.norm(q_wxyz, axis=1, keepdims=True)
+        norms[norms < 1e-8] = 1.0
+        q_norm = q_wxyz / norms
+        
+        q_xyzw = np.column_stack((q_norm[:, 1], q_norm[:, 2], q_norm[:, 3], q_norm[:, 0]))
+        rot = Rotation.from_quat(q_xyzw)
+        
+        processed[:, gi*3:(gi+1)*3] = rot.inv().apply(world_g)
     return processed
 
 
@@ -142,21 +159,35 @@ def compute_zero_crosing(velocity: np.ndarray) -> np.ndarray:
 def statistical_pool(ts: np.ndarray) -> np.ndarray:
     N, C = ts.shape
     processed = np.zeros(C * STATS_PER_CH)
-    for c in range(C):
-        col = ts[:, c]
-        b = c * STATS_PER_CH
-        processed[b+0] = np.mean(col)
-        processed[b+1] = np.var(col)
-        processed[b+2] = np.subtract(*np.percentile(col, [75, 25]))
-        processed[b+3] = float(skew(col)) if N > 2 else 0.0
-        processed[b+4] = float(kurtosis(col)) if N > 2 else 0.0
-        processed[b+5] = np.sqrt(np.mean(col ** 2))   
+    
+    means = np.mean(ts, axis=0)
+    vars = np.var(ts, axis=0)
+    p75 = np.percentile(ts, 75, axis=0)
+    p25 = np.percentile(ts, 25, axis=0)
+    iqr = p75 - p25
+    skews = skew(ts, axis=0) if N > 2 else np.zeros(C)
+    kurts = kurtosis(ts, axis=0) if N > 2 else np.zeros(C)
+    rmss = np.sqrt(np.mean(ts ** 2, axis=0))
+    
+    if N >= 4:
+        fft_mags = np.abs(np.fft.rfft(ts, axis=0))[1:, :]
+        top_k = min(N_FFT_COEFFS, len(fft_mags))
+        sorted_fft = np.sort(fft_mags, axis=0)[-top_k:][::-1, :]
+    else:
+        sorted_fft = np.zeros((N_FFT_COEFFS, C))
+        top_k = 0
 
-        if N >= 4:
-            fft_mag = np.abs(np.fft.rfft(col))[1:]
-            top_k = min(N_FFT_COEFFS, len(fft_mag))
-            top_idx = np.argsort(fft_mag)[-top_k:][::-1]
-            processed[b+6:b+6+top_k] = fft_mag[top_idx]
+    for c in range(C):
+        b = c * STATS_PER_CH
+        processed[b+0] = means[c]
+        processed[b+1] = vars[c]
+        processed[b+2] = iqr[c]
+        processed[b+3] = float(skews[c])
+        processed[b+4] = float(kurts[c])
+        processed[b+5] = rmss[c]
+        if top_k > 0:
+            processed[b+6:b+6+top_k] = sorted_fft[:top_k, c]
+            
     return processed
 
 
