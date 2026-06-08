@@ -1,23 +1,26 @@
 import os, sys, json
 import numpy as np
-import onnxruntime as ort
+import joblib
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from features_engineering.feature_pipeline import extract_features
+from features_engineering.timefm_extractor import extract_timefm_embeddings
+
 DEFAULT_WINDOW_SIZES = [60, 90, 130, 170, 210, 260, 310, 360]
 
-
-class SlidingWindowRecognizerONNX:
-
+class SlidingWindowRecognizerTimeFM:
     def __init__(self, model_dir: str, window_sizes: list | None = None, stride: int = 9, confidence_threshold: float = 0.2):
-
-        onnx_path = os.path.join(model_dir, "windowed_rf.onnx")
-        if not os.path.exists(onnx_path):
-            raise FileNotFoundError(f"ONNX model not found at {onnx_path}")
+        
+        model_path = os.path.join(model_dir, "windowed_classical_timefm_best.joblib")
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Model not found at {model_path}")
             
-        # Initialize ONNX CPU execution provider
-        self.session = ort.InferenceSession(onnx_path, providers=['CPUExecutionProvider'])
-        self.input_name = self.session.get_inputs()[0].name
+        saved_data = joblib.load(model_path)
+        self.clf = saved_data["model"]
+        self.model_name = saved_data["model_name"]
+        self.classes = saved_data["classes"]
+        
+        # If the model is LightGBM or XGBoost, the predict_proba logic is the same but classes might be ordered differently
+        # Let's ensure self.classes is aligned with the internal predict_proba output.
         
         self.window_sizes = window_sizes or DEFAULT_WINDOW_SIZES
         self.stride = stride
@@ -35,29 +38,35 @@ class SlidingWindowRecognizerONNX:
                 continue
             for start in range(0, N - size + 1, self.stride):
                 window = frames[start : start + size]
-                feature_values = extract_features(window, dt)
+                feature_values = extract_timefm_embeddings(window)
                 if feature_values is not None:
                     feature_batch.append(feature_values)
                     meta_batch.append((start, size))
 
         if feature_batch:
-            # Run inference via ONNX
-            input_tensor = np.array(feature_batch).astype(np.float32)
-            ort_outs = self.session.run(None, {self.input_name: input_tensor})
+            X = np.array(feature_batch)
+            probabilities = self.clf.predict_proba(X)
             
-            predicted_labels = ort_outs[0]
-            probabilities = ort_outs[1] 
+            best_window_idx = np.argmax(np.max(probabilities, axis=1))
+            best_probs = probabilities[best_window_idx]
+            prob_dict = {self.classes[j]: float(best_probs[j]) for j in range(len(self.classes))}
+            self.latest_probs = dict(sorted(prob_dict.items(), key=lambda item: item[1], reverse=True))
             
-            for i in range(len(predicted_labels)):
-                label = predicted_labels[i]
-                highest = float(np.max(probabilities[i]))
-                
+            for i, prob in enumerate(probabilities):
+                max_index = int(np.argmax(prob))
+                highest = float(prob[max_index])
                 if highest >= self.conf_thresh:
+                    label = self.classes[max_index]
                     if label != "background":
                         start, size = meta_batch[i]
+                        
+                        prob_dict = {self.classes[j]: float(prob[j]) for j in range(len(self.classes))}
+                        sorted_probs = dict(sorted(prob_dict.items(), key=lambda item: item[1], reverse=True))
+
                         candidates.append({
-                            "label": str(label),
+                            "label": label,
                             "confidence": highest,
+                            "all_probs": sorted_probs,
                             "start": start,
                             "end": start + size - 1,
                             "window_size": size,
@@ -65,15 +74,13 @@ class SlidingWindowRecognizerONNX:
 
         detections = self.nms(candidates)
         detections.sort(key=lambda detection: detection["start"])
-        
         detections = self.postprocess_bigrams(detections)
         
         return detections
 
     @staticmethod
     def nms(candidates: list, overlap_thresh: float = 0.1) -> list:
-
-        potentials = sorted(candidates, key=lambda c: -c["confidence"])
+        potentials = sorted(candidates, key=lambda c: (-c["window_size"], -c["confidence"]))
         accepted = []
 
         while potentials:

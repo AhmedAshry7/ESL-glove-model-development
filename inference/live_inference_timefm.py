@@ -1,7 +1,6 @@
 import asyncio
 import websockets
 import struct
-import json
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import sys
@@ -30,40 +29,9 @@ from rich.console import Group
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 
-from inference.sliding_window_recognizer import SlidingWindowRecognizer
+from inference.sliding_window_recognizer_timefm import SlidingWindowRecognizerTimeFM
 import config.pipeline_config as cfg
 from preprocessing.stream_preprocessor import preprocess_stream
-
-# --- Relay server (port 8766) — broadcasts predictions to connected mobile clients ---
-RELAY_PORT = 8766
-_relay_clients: set = set()
-
-async def _relay_handler(websocket, path=None):
-    """Handle a single relay client; keep it alive until it disconnects."""
-    _relay_clients.add(websocket)
-    try:
-        async for _ in websocket:
-            pass
-    except websockets.exceptions.ConnectionClosed:
-        pass
-    finally:
-        _relay_clients.discard(websocket)
-
-async def _broadcast(word: str, ui_ref=None):
-    """Broadcast a detected word as JSON to all connected relay clients."""
-    if not _relay_clients:
-        if ui_ref: ui_ref.debug_text = "Relay: No clients connected."
-        return
-    payload = json.dumps({"word": word, "sentence": word})
-    dead = set()
-    for ws in set(_relay_clients):
-        try:
-            await ws.send(payload)
-        except Exception:
-            dead.add(ws)
-    _relay_clients -= dead
-    if ui_ref:
-        ui_ref.debug_text = f"Relay: Broadcasted '{word}' to {len(_relay_clients)} client(s)."
 
 # Hardcoded REST_POSES extracted from HumanCharacterDummy_M.glb
 REST_POSES = {
@@ -347,8 +315,7 @@ async def glove_inference_client(ip="192.168.1.8"):
     ui = AppUI(ip)
     
     try:
-        loop = asyncio.get_event_loop()
-        recognizer = SlidingWindowRecognizer(model_dir=os.path.join(model_dir, "..", "models"))
+        recognizer = SlidingWindowRecognizerTimeFM(model_dir=os.path.join(model_dir, "..", "models"))
     except Exception as e:
         ui.error = f"Error loading model: {e}"
         print(f"Error loading model: {e}")
@@ -358,10 +325,6 @@ async def glove_inference_client(ip="192.168.1.8"):
     frames_buffer = []
     timestamps_buffer = []
     max_window_size = max(recognizer.window_sizes)
-
-    # Start the relay broadcast server
-    relay_server = await websockets.serve(_relay_handler, "0.0.0.0", RELAY_PORT)
-    print(f"[Relay] Broadcast server listening on port {RELAY_PORT}")
 
     # Keyboard Listener Thread
     def keyboard_listener():
@@ -381,82 +344,6 @@ async def glove_inference_client(ip="192.168.1.8"):
             live.update(ui.make_layout())
 
         frame_counter = 0
-        inference_cursor = 0
-        new_data_event = asyncio.Event()
-
-        def run_inference_task(t, v):
-            _, preprocessed = preprocess_stream(t, v, disabled_groups=cfg.DISABLED_FEATURE_GROUPS)
-            dets = recognizer.recognize(preprocessed)
-            return dets, getattr(recognizer, 'latest_probs', {})
-
-        async def inference_worker():
-            nonlocal inference_cursor
-            while True:
-                await new_data_event.wait()
-                
-                while len(frames_buffer) - inference_cursor >= max_window_size + 10:
-                    ui.is_inferring = True
-                    try:
-                        target_len = max_window_size + 10
-                        t_slice = timestamps_buffer[inference_cursor : inference_cursor + target_len]
-                        v_slice = frames_buffer[inference_cursor : inference_cursor + target_len]
-                        
-                        f_counter = frame_counter - len(frames_buffer) + inference_cursor + target_len
-                        
-                        t_arr = np.array(t_slice)
-                        v_arr = np.array(v_slice)
-                        
-                        detections, live_probs = await asyncio.to_thread(run_inference_task, t_arr, v_arr)
-                        
-                        ui.all_probs = live_probs
-                        
-                        if detections:
-                            for d in detections:
-                                absolute_end = f_counter - len(v_arr) + d['end']
-                                word = d['label'].upper()
-                                
-                                is_duplicate = False
-                                if ui.current_sequence and ui.current_sequence[-1] == word:
-                                    is_duplicate = True
-                                elif word in ui.last_emitted_times:
-                                    if absolute_end - ui.last_emitted_times[word] < 250:
-                                        is_duplicate = True
-                                        
-                                if not is_duplicate:
-                                    ui.last_emitted_times[word] = absolute_end
-                                    
-                                    if frame_counter - ui.last_detection_frame > 100:
-                                        ui.current_sequence = []
-                                        
-                                    ui.current_sequence.append(word)
-                                    ui.prediction = " ".join(ui.current_sequence)
-                                    ui.confidence = d['confidence']
-                                    ui.last_detection_frame = frame_counter
-                                    
-                                    # Broadcast to relay clients (mobile app)
-                                    sentence = ui.prediction
-                                    asyncio.ensure_future(_broadcast(sentence, ui))
-                                    
-                                    if not ui.history or ui.history[-1] != word:
-                                        ui.history.append(word)
-                                            
-                        update_ui()
-                    except Exception as e:
-                        ui.debug_text = f"Inference Error: {type(e).__name__} - {str(e)}"
-                        update_ui()
-                    finally:
-                        ui.is_inferring = False
-                    
-                    inference_cursor += 10
-                    
-                    # Catch up if we're falling too far behind to prevent lag
-                    if len(frames_buffer) - inference_cursor > max_window_size + 50:
-                        inference_cursor = len(frames_buffer) - max_window_size - 10
-
-                new_data_event.clear()
-
-        worker_task = asyncio.create_task(inference_worker())
-
         fps_frame_count = 0
         fps_start_time = time.time()
 
@@ -508,7 +395,8 @@ async def glove_inference_client(ip="192.168.1.8"):
                                 f"[R_FINGERS] {right_fingers}\n"
                                 f"[L_FINGERS] {left_fingers}"
                             )
-                            update_ui()
+                            if not ui.is_inferring:
+                                update_ui()
 
                         if not calibrator.is_calibrated:
                             ui.calib_frames += 1
@@ -539,25 +427,77 @@ async def glove_inference_client(ip="192.168.1.8"):
                         flat56.extend(get_WXYZ(lPalm['upperArm']))
                         
                         frames_buffer.append(flat56)
-                        timestamps_buffer.append(frame_counter * 20000.0)  # Simulated timestamps at 50Hz (20ms) to guarantee monotonicity
+                        timestamps_buffer.append(float(timestamp_us))  # Actual ESP hardware timestamp (micros)
                         
-                        if len(frames_buffer) > 600:
+                        if len(frames_buffer) > max_window_size + 10:
                             frames_buffer.pop(0)
                             timestamps_buffer.pop(0)
-                            inference_cursor = max(0, inference_cursor - 1)
                             
-                        if len(frames_buffer) - inference_cursor >= max_window_size + 10:
-                            new_data_event.set()
+                        if len(frames_buffer) >= max_window_size:
+                            if len(frames_buffer) % 10 == 0:
+                                if not ui.is_inferring:
+                                    ui.is_inferring = True
+                                    t_arr = np.array(timestamps_buffer)
+                                    v_arr = np.array(frames_buffer)
+                                    current_frame = frame_counter
+                                    
+                                    def run_inference_task(t, v):
+                                        _, preprocessed = preprocess_stream(t, v, disabled_groups=cfg.DISABLED_FEATURE_GROUPS)
+                                        dets = recognizer.recognize(preprocessed)
+                                        return dets, getattr(recognizer, 'latest_probs', {})
+                                        
+                                    async def process_inference():
+                                        try:
+                                            detections, live_probs = await asyncio.to_thread(run_inference_task, t_arr, v_arr)
+                                            
+                                            ui.all_probs = live_probs
+                                            
+                                            if detections:
+                                                for d in detections:
+                                                    absolute_end = current_frame - len(v_arr) + d['end']
+                                                    # Only process detections that finished recently
+                                                    if d['end'] >= len(v_arr) - 25:
+                                                        word = d['label'].upper()
+                                                        
+                                                        # Avoid adding the exact same detection consecutively, and apply a 5-second (250 frames) cooldown per word
+                                                        is_duplicate = False
+                                                        if ui.current_sequence and ui.current_sequence[-1] == word:
+                                                            is_duplicate = True
+                                                        elif word in ui.last_emitted_times:
+                                                            if absolute_end - ui.last_emitted_times[word] < 250:
+                                                                is_duplicate = True
+                                                                
+                                                        if not is_duplicate:
+                                                            ui.last_emitted_times[word] = absolute_end
+                                                            
+                                                            # Clear sequence if too much time has passed
+                                                            if frame_counter - ui.last_detection_frame > 100:
+                                                                ui.current_sequence = []
+                                                                
+                                                            ui.current_sequence.append(word)
+                                                            ui.prediction = " ".join(ui.current_sequence)
+                                                            ui.confidence = d['confidence']
+                                                            ui.last_detection_frame = frame_counter
+                                                            
+                                                            if not ui.history or ui.history[-1] != word:
+                                                                ui.history.append(word)
+                                                                
+                                            update_ui()
+                                        except Exception as e:
+                                            ui.debug_text = f"Inference Error: {type(e).__name__} - {str(e)}"
+                                            update_ui()
+                                        finally:
+                                            ui.is_inferring = False
+                                            
+                                    asyncio.create_task(process_inference())
                                         
                         # Clear old predictions after 2 seconds (100 frames)
-                        if len(frames_buffer) - inference_cursor < max_window_size + 10 and not ui.is_inferring:
-                            if frame_counter - ui.last_detection_frame > 100 and ui.prediction != "WAITING":
-                                ui.prediction = "WAITING"
-                                ui.current_sequence = []
-                                ui.confidence = 0.0
-                                ui.all_probs = {}
-                                update_ui()
-                                asyncio.ensure_future(_broadcast("WAITING", ui))
+                        if frame_counter - ui.last_detection_frame > 100 and ui.prediction != "WAITING":
+                            ui.prediction = "WAITING"
+                            ui.current_sequence = []
+                            ui.confidence = 0.0
+                            ui.all_probs = {}
+                            update_ui()
 
             except Exception as e:
                 ui.error = f"Connection Lost. Retrying... (Error: {type(e).__name__} - {str(e)})"
