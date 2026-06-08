@@ -37,10 +37,18 @@ from preprocessing.stream_preprocessor import preprocess_stream
 # --- Relay server (port 8766) — broadcasts predictions to connected mobile clients ---
 RELAY_PORT = 8766
 _relay_clients: set = set()
+_bg_tasks: set = set()
 
-async def _relay_handler(websocket, path=None):
+def _task_done(task, ui_ref=None):
+    _bg_tasks.discard(task)
+    exc = task.exception()
+    if exc and ui_ref:
+        ui_ref.log_relay(f"[CRITICAL] Broadcast crashed: {type(exc).__name__} - {exc}")
+
+async def _relay_handler(websocket, path=None, ui_ref=None):
     """Handle a single relay client; keep it alive until it disconnects."""
     _relay_clients.add(websocket)
+    if ui_ref: ui_ref.log_relay(f"[+] Phone connected. Total: {len(_relay_clients)}")
     try:
         async for _ in websocket:
             pass
@@ -48,11 +56,13 @@ async def _relay_handler(websocket, path=None):
         pass
     finally:
         _relay_clients.discard(websocket)
+        if ui_ref: ui_ref.log_relay(f"[-] Phone disconnected. Total: {len(_relay_clients)}")
 
 async def _broadcast(word: str, ui_ref=None):
     """Broadcast a detected word as JSON to all connected relay clients."""
+    global _relay_clients
     if not _relay_clients:
-        if ui_ref: ui_ref.debug_text = "Relay: No clients connected."
+        if ui_ref: ui_ref.log_relay("Relay: No phones connected.")
         return
     payload = json.dumps({"word": word, "sentence": word})
     dead = set()
@@ -63,7 +73,7 @@ async def _broadcast(word: str, ui_ref=None):
             dead.add(ws)
     _relay_clients -= dead
     if ui_ref:
-        ui_ref.debug_text = f"Relay: Broadcasted '{word}' to {len(_relay_clients)} client(s)."
+        ui_ref.log_relay(f"[>] Sent: '{word}' ({len(_relay_clients)} phones)")
 
 # Hardcoded REST_POSES extracted from HumanCharacterDummy_M.glb
 REST_POSES = {
@@ -256,6 +266,12 @@ class AppUI:
         self.current_sequence = []
         self.last_emitted_times = {}
         self.fps = 0.0
+        self.relay_logs = []
+
+    def log_relay(self, msg):
+        self.relay_logs.append(msg)
+        if len(self.relay_logs) > 10:
+            self.relay_logs.pop(0)
 
     def make_layout(self):
         layout = Layout()
@@ -267,7 +283,8 @@ class AppUI:
         )
         layout["body"].split_row(
             Layout(name="main", ratio=2),
-            Layout(name="history", ratio=1)
+            Layout(name="history", ratio=1),
+            Layout(name="relay_logs", ratio=1)
         )
         
         header_text = Text(f" ESL Glove Live Inference | Target: ws://{self.ip}:81 ", style="bold white on blue", justify="center")
@@ -323,6 +340,13 @@ class AppUI:
         for h in reversed(self.history[-10:]):
             history_text.append(f"• {fix_arabic(h)}\n", style="white")
         layout["history"].update(Panel(history_text, title="History", border_style="blue"))
+        
+        # Relay Logs
+        relay_text = Text()
+        for r in self.relay_logs:
+            relay_text.append(f"• {r}\n", style="cyan")
+        layout["relay_logs"].update(Panel(relay_text, title="Relay Logs", border_style="cyan"))
+        
         # Debug content
         debug_panel = Panel(Text(self.debug_text, style="dim white"), title="Raw Hardware Debug (Live)", border_style="cyan")
         layout["debug"].update(debug_panel)
@@ -360,7 +384,9 @@ async def glove_inference_client(ip="192.168.1.8"):
     max_window_size = max(recognizer.window_sizes)
 
     # Start the relay broadcast server
-    relay_server = await websockets.serve(_relay_handler, "0.0.0.0", RELAY_PORT)
+    async def relay_wrapper(*args, **kwargs):
+        await _relay_handler(args[0], ui_ref=ui)
+    relay_server = await websockets.serve(relay_wrapper, "0.0.0.0", RELAY_PORT)
     print(f"[Relay] Broadcast server listening on port {RELAY_PORT}")
 
     # Keyboard Listener Thread
@@ -425,7 +451,7 @@ async def glove_inference_client(ip="192.168.1.8"):
                                 if not is_duplicate:
                                     ui.last_emitted_times[word] = absolute_end
                                     
-                                    if frame_counter - ui.last_detection_frame > 100:
+                                    if frame_counter - ui.last_detection_frame > 250:
                                         ui.current_sequence = []
                                         
                                     ui.current_sequence.append(word)
@@ -435,7 +461,9 @@ async def glove_inference_client(ip="192.168.1.8"):
                                     
                                     # Broadcast to relay clients (mobile app)
                                     sentence = ui.prediction
-                                    asyncio.ensure_future(_broadcast(sentence, ui))
+                                    t = asyncio.ensure_future(_broadcast(sentence, ui))
+                                    _bg_tasks.add(t)
+                                    t.add_done_callback(lambda task, u=ui: _task_done(task, u))
                                     
                                     if not ui.history or ui.history[-1] != word:
                                         ui.history.append(word)
@@ -549,15 +577,17 @@ async def glove_inference_client(ip="192.168.1.8"):
                         if len(frames_buffer) - inference_cursor >= max_window_size + 10:
                             new_data_event.set()
                                         
-                        # Clear old predictions after 2 seconds (100 frames)
+                        # Clear old predictions after 5 seconds (250 frames)
                         if len(frames_buffer) - inference_cursor < max_window_size + 10 and not ui.is_inferring:
-                            if frame_counter - ui.last_detection_frame > 100 and ui.prediction != "WAITING":
+                            if frame_counter - ui.last_detection_frame > 250 and ui.prediction != "WAITING":
                                 ui.prediction = "WAITING"
                                 ui.current_sequence = []
                                 ui.confidence = 0.0
                                 ui.all_probs = {}
                                 update_ui()
-                                asyncio.ensure_future(_broadcast("WAITING", ui))
+                                t = asyncio.ensure_future(_broadcast("WAITING", ui))
+                                _bg_tasks.add(t)
+                                t.add_done_callback(lambda task, u=ui: _task_done(task, u))
 
             except Exception as e:
                 ui.error = f"Connection Lost. Retrying... (Error: {type(e).__name__} - {str(e)})"
